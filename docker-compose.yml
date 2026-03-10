@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build: ./backend          # 使用 backend 目录下的 Dockerfile 构建
+    ports:
+      - "8000:8000"          # 映射端口：主机8000 -> 容器8000
+    volumes:
+      - ./data:/data          # 挂载数据目录（持久化）
+      - ./outputs:/outputs    # 挂载输出目录
+    environment:
+      - DATA_PATH=/data
+      - OUTPUT_PATH=/outputs
+    restart: always
+
+  # 前端服务
+  frontend:
+    build: ./frontend         # 使用 frontend 目录下的 Dockerfile 构建
+    ports:
+      - "8501:8501"          # 映射端口：主机8501 -> 容器8501
+    environment:
+      - BACKEND_URL=http://backend:8000  # 后端内部地址
+    depends_on:
+      - backend               # 等后端启动后再启动前端
+    restart: always
