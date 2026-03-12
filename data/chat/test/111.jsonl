@@ -1,0 +1,2 @@
+{"role": "test", "chat": "111", "content": "你好", "name": "用户", "is_user": true, "send_date": "2026-03-12 18:26:50", "floor_number": 1, "swipes": [], "swipes_id": 0}
+{"role": "test", "chat": "111", "content": "这是重roll后的新回复2", "name": "AI", "is_user": false, "send_date": "2026-03-12 18:26:50", "floor_number": 2, "swipes": ["这是重roll后的新回复", "这是重roll后的新回复2"], "swipes_id": 1}
