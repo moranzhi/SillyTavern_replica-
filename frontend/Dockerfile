@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 复制依赖文件并安装
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 # 复制所有代码
 COPY . .
@@ -14,5 +14,5 @@ COPY . .
 # 暴露端口
 EXPOSE 8501
 
-# 启动命令
+# 启动命令（使用 8501 端口，与 docker-compose 映射保持一致）
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

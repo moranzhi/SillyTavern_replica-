@@ -29,7 +29,7 @@ def render_chat_window(backend_url):
             full_response = ""
 
             # 模拟流式接收 (实际需使用 requests stream 或 websocket)
-            # POST /api/chat/stream
+            # POST /api/role/stream
             try:
                 # 伪代码示例：
                 # with requests.post(f"{backend_url}/api/chat/stream", json={"message": prompt}, stream=True) as r:

@@ -1,33 +1,37 @@
 import json
-from typing import Dict, Any
 from datetime import datetime
-import config as cfg
+from backend.core import config as cfg
 from pathlib import Path
 
 
-def save_input_to_json(
-        mes: str,
-        role_name: str,
-        chat_name: str,
-        name: str,
-        is_user: bool,
-        floor_number: int = 0
-) -> Dict[str, Any]:
+# 假设 ChatRequest 定义在这里或者从其他地方导入
+# from backend.app.core.items import ChatRequest
+
+async def save_input_to_json(chat_request: ChatRequest):
     """
     保存消息到JSONL文件或处理重roll请求
 
     参数:
-        mes: 消息内容
-        role_name: 角色名称
-        chat_name: 对话名称
-        name: 发送者名称
-        is_user: 是否为用户消息
-        floor_number: 楼层号(对话中的第几次回复)，用于判断是否为重roll请求
-
-    返回:
-        更新后的消息对象
+        chat_request: 包含消息详情的请求对象
     """
+    # 1. 从对象中提取属性
+    mes = chat_request.mes
+    role_name = chat_request.role_name
+    chat_name = chat_request.chat_name
+    name = chat_request.name
+    is_user = chat_request.is_user
+    floor_number = chat_request.floor_number
+    # stream, img_switch, table_switch 等虽然在这个函数逻辑中没用到，
+    # 但如果 ChatRequest 中有，也可以提取出来备用
+    # stream = chat_request.stream
+    # ...
+
     config = cfg.settings
+    # 注意：这里要确保 role_name 和 chat_name 不为 None，否则路径拼接会报错
+    # 建议在函数入口处增加校验，或者在 Pydantic 模型中设置为必填项
+    if not role_name or not chat_name:
+        raise ValueError("role_name and chat_name cannot be empty")
+
     file_path = config.BASE_PATH / "data" / "chat" / role_name / f"{chat_name}.jsonl"
 
     # 确保目录存在
@@ -115,31 +119,34 @@ def save_input_to_json(
 
 
 if __name__ == '__main__':
-    # 测试普通消息保存
-    # save_input_to_json(
-    #     mes="你好",
-    #     role_name="test",
-    #     chat_name="111",
-    #     name="用户",
-    #     is_user=True,
-    #     floor_number=0
-    # )
-    #
-    # save_input_to_json(
-    #     mes="你好，我是AI助手",
-    #     role_name="test",
-    #     chat_name="111",
-    #     name="AI",
-    #     is_user=False,
-    #     floor_number=1
-    # )
+    # 注意：为了在本地运行测试，你需要手动构造一个 ChatRequest 对象
+    # 或者临时修改函数签名以便直接传参测试
+
+    # 示例：假设 ChatRequest 是一个简单的类或 Pydantic 模型
+    class MockChatRequest:
+        def __init__(self, **kwargs):
+            self.mes = kwargs.get('mes')
+            self.role_name = kwargs.get('role_name')
+            self.chat_name = kwargs.get('chat_name')
+            self.name = kwargs.get('name')
+            self.is_user = kwargs.get('is_user')
+            self.floor_number = kwargs.get('floor_number')
+
 
     # 测试重roll最后一条AI消息
-    save_input_to_json(
-        mes="这是重roll后的新回复2",
-        role_name="test",
-        chat_name="111",
-        name="AI",
-        is_user=False,
-        floor_number=2  # 与当前楼层号相同，表示重roll
-    )
+    import asyncio
+
+
+    async def test():
+        req = MockChatRequest(
+            mes="这是重roll后的新回复2",
+            role_name="test",
+            chat_name="111",
+            name="AI",
+            is_user=False,
+            floor_number=2
+        )
+        await save_input_to_json(req)
+
+
+    asyncio.run(test())

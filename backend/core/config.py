@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # __file__ 指向本文件的绝对路径
 # .parent 指向 backend/ 目录
 # .parent.parent 指向项目根目录 (即包含 backend/ 和 frontend/ 的目录)
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent  # 修改这里，添加一个 .parent
 
 # 2. 加载 .env 文件
 # 假设 .env 文件位于项目根目录下
@@ -38,8 +38,10 @@ class Settings:
     REGEX_FILE = DATA_PATH / "regex_rules.json"
     VECTORSTORE_PATH = DATA_PATH / "vectorstore"
 
-    # ... 其他配置 ...
-
-
-# 实例化配置对象
 settings = Settings()
+
+if __name__ == '__main__':
+    # 实例化配置对象
+    settings = Settings()
+    print(settings.BASE_PATH)
+
