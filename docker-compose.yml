@@ -3,11 +3,14 @@ version: '3.8'
 services:
   backend:
     build: ./backend
+    # 启动命令：明确指定 backend.api.route
     command: uvicorn backend.api.route:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "3001:8000"
     volumes:
-      - .:/app
+      # 关键点：挂载到 /app/backend
+      # 这样容器内就是 /app/backend/api/route.py
+      - ./backend:/app/backend
       - ./data:/data
       - ./outputs:/outputs
     environment:
@@ -15,15 +18,23 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
-    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0 --server.fileWatcherType=poll
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
     ports:
-      - "3000:8501"
-    environment:
-      - BACKEND_URL=http://backend:8000
-      - PYTHONUNBUFFERED=1
+      - "3000:5173"
     volumes:
-      - ./frontend:/app  # 确保宿主机路径与容器内路径一致
+      # 挂载前端源码，实现代码热更新
+      - ./frontend-react:/app
+      # 匿名卷：防止宿主机的 node_modules 覆盖容器内的模块
+      # (这是前端 Docker 开发的最佳实践，防止因系统差异导致依赖不兼容)
+      - /app/node_modules
+    environment:
+      # 告诉前端后端地址
+      # 注意：这里使用 localhost 是因为它们都映射到了宿主机
+      # 在容器内部通信时，前端通过 Vite 代理转发到 http://backend:8000
+      - VITE_BACKEND_URL=http://localhost:3001
+    command: npm run dev -- --host 0.0.0.0
     depends_on:
       - backend
     restart: unless-stopped

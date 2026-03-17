@@ -11,7 +11,7 @@ async def save_input_to_json(chat_request: ChatRequest):
     return 0
 
 # 2. 从本地jsonl中读取历史对话
-@app.get("/get_all_role_and_chat")
+@app.get("/api/get_all_role_and_chat")
 def get_all_role_and_chat():
     # 直接调用导入的函数
     result = get_chat_file()
