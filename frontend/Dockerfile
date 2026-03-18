@@ -1,39 +1,22 @@
-# 1. 基础镜像变更
-# 原本是 Python 3.11，现在改为 Node.js 18 (Alpine 版本体积更小)
-# 分为两个阶段：builder (构建阶段) 和 production (运行阶段)
-FROM node:18-alpine as builder
+# 使用 Node.js 18 Alpine 镜像作为基础
+FROM node:18-alpine
 
-# 2. 设置工作目录
+# 设置工作目录
 WORKDIR /app
 
-# 3. 依赖安装变更
-# 原本是复制 requirements.txt 并用 pip 安装 Python 库
-# 现在是复制 package.json 并用 npm 安装 Node.js 库
+# 设置 npm 镜像源（可选，国内推荐使用，加速依赖下载）
+RUN npm config set registry https://registry.npmmirror.com/
+
+# 复制 package.json 和 package-lock.json
+# 利用 Docker 缓存层，只有依赖变更时才重新安装
 COPY package.json package-lock.json* ./
-RUN npm ci
 
-# 4. 复制源代码
-# 保持不变，复制当前目录所有文件到容器
-COPY . .
+# 安装依赖
+RUN npm install
 
-# 5. 构建步骤
-# 原本没有这一步，Streamlit 是解释型语言，直接运行
-# React 需要编译打包成静态文件 (HTML/CSS/JS)
-RUN npm run build
+# 暴露 Vite 默认端口 5173
+EXPOSE 5173
 
-# --- 生产环境运行阶段 ---
-FROM nginx:alpine
-
-# 6. 部署静态文件
-# 将上面构建好的 /app/build (React 默认构建目录) 复制到 Nginx 的默认目录
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# 7. 端口变更
-# 原本是 Streamlit 的 8501 端口
-# 现在改为 Nginx 的标准 80 端口
-EXPOSE 80
-
-# 8. 启动命令变更
-# 原本是 streamlit run app.py
-# 现在是启动 Nginx 服务器
-CMD ["nginx", "-g", "daemon off;"]
+# 启动命令由 docker-compose.yml 中的 command 覆盖，
+# 这里保留默认的 dev 命令作为 fallback
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
