@@ -18,12 +18,14 @@ html, body, #root {
 #root {
   display: flex;
   flex-direction: column;
-  position: relative; /* 关键：让绝对定位的工具栏相对于此容器定位 */
+  position: relative; /* 让绝对定位的工具栏相对于此容器定位 */
+  height: 100%; /* 确保高度占满 */
+  width: 100%;
 }
 
 /* --- 顶部工具栏区域 --- */
 .toolbar {
-  position: absolute; /* 关键：脱离文档流，实现覆盖效果 */
+  position: absolute; /* 脱离文档流，实现覆盖效果 */
   top: 0;
   left: 0;
   right: 0;
@@ -58,15 +60,30 @@ html, body, #root {
   display: block; /* 展开时显示 */
 }
 
+/* 工具栏按钮样式微调 */
+.toolbar-toggle-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
 /* --- 主内容区域 --- */
 .main-container {
-  /* 关键布局：占据除工具栏外的所有空间 */
-  /* 由于工具栏是 absolute 的，我们需要手动设置 top */
+  /* 占据除工具栏外的所有空间 */
   position: absolute;
   top: 50px; /* 对应 .toolbar 的默认高度 */
   bottom: 0;
   left: 0;
   right: 0;
+
+  /* 【关键修复 1】显式设置高度为 100%，而不是 auto */
+  /* 这确保了容器高度由视口决定，而不是由内容撑开 */
+  height: 100%;
+  width: 100%;
 
   display: flex;
   overflow: hidden; /* 防止主容器本身滚动 */
@@ -77,17 +94,21 @@ html, body, #root {
   width: 20%;
   background-color: #fff;
   border-right: 1px solid #ddd;
-  overflow-y: auto; /* 独立滚动 */
+  overflow-y: auto; /* 【独立滚动 1】左侧栏滚动 */
   height: 100%; /* 填满父容器高度 */
 }
 
+/* --- 中间栏：聊天框 --- */
 .chat-area {
   flex: 3;
   background-color: #fafafa;
+  height: 100%; /* 填满父容器高度 */
+
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden; /* 内部元素滚动，外层不滚动 */
+  flex-direction: column; /* 垂直排列：消息列表 + 输入框 */
+
+  overflow: hidden; /* 禁止外层滚动，强制内部滚动 */
+  position: relative; /* 为绝对定位元素提供参考 */
 }
 
 .sidebar-right {
@@ -103,7 +124,7 @@ html, body, #root {
 /* 右侧上下分割 */
 .right-top, .right-bottom {
   flex: 1;
-  overflow-y: auto; /* 独立滚动 */
+  overflow-y: auto; /* 【独立滚动 2 & 3】右侧上下部分独立滚动 */
   padding: 10px;
   min-height: 0; /* 关键：允许 flex 子项收缩 */
 }
@@ -111,15 +132,155 @@ html, body, #root {
   border-bottom: 1px solid #ddd;
 }
 
-/* 工具栏按钮样式微调 */
-.toolbar-toggle-btn {
-  background: none;
+/* --- 消息列表容器 --- */
+.chat-messages {
+  /* 【关键修改 1】不再自动占据剩余空间，高度由内容决定 */
+  flex: 0 0 auto;
+
+  /* 【关键修改 2】设置最大高度，例如视口高度的 80% */
+  max-height: calc(100vh - 110px);
+
+  /* 强制约束高度，防止内容撑开 */
+  min-height: 0;
+
+  /* 内部独立滚动 */
+  overflow-y: auto; /* 内容溢出时显示滚动条 */
+
+  padding: 20px;
+  /* 增加顶部 padding，防止内容被绝对定位的设置面板遮挡 */
+  padding-top: 60px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* --- 设置面板 (右上角) --- */
+.settings-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  background-color: #fff;
+  border-bottom-left-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-width: 200px;
+}
+
+.settings-panel.collapsed {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.settings-panel.expanded {
+  width: auto;
+  min-width: 150px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-top: none;
+  border-right: none;
+}
+
+.settings-header {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+}
+
+.settings-panel.collapsed .settings-header:hover {
+  background-color: #e0e0e0;
+}
+
+.settings-options {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.settings-panel.expanded .settings-options {
+  display: flex;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #333;
+}
+
+.setting-item input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* --- 输入区域容器 --- */
+.chat-input-wrapper {
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  padding: 10px 20px;
+
+  /* 使用 flex 属性，不伸缩，高度由内容决定 */
+  flex: 0 0 auto;
+
+  /* 保持 flex 布局以便内部对齐 */
+  display: flex;
+  align-items: flex-end; /* 底部对齐，适应多行输入框 */
+  gap: 10px;
+
+  width: 100%;
+}
+
+.chat-input-area {
+  flex: 1; /* 占据除按钮外的所有宽度 */
+  display: flex;
+  /* 移除 height: 100%，让高度由内容决定 */
+}
+
+.chat-input-area textarea {
+  width: 100%;
+  /* 设置初始高度和最大高度 */
+  height: 42px; /* 初始高度 */
+  min-height: 42px; /* 最小高度 */
+  max-height: 300px; /* 最大高度，超过此高度显示滚动条 */
+
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  /* 【独立滚动 5】输入框内部滚动 */
+  overflow-y: auto;
+  display: block;
+}
+
+.send-button {
+  height: 42px;
+  padding: 0 20px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 4px 8px;
-  font-size: 0.8rem;
-  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-bottom: 0; /* 确保与输入框底部对齐 */
+}
+
+.send-button:hover {
+  background-color: #40a9ff;
 }
 
 /* 通用滚动条美化 */
@@ -136,4 +297,67 @@ html, body, #root {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #aaa;
+}
+
+/* --- 聊天气泡样式美化 --- */
+
+/* 消息行容器 */
+.message {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* 区分左右布局 */
+.message.user {
+  justify-content: flex-end; /* 用户消息靠右 */
+}
+
+.message.ai {
+  justify-content: flex-start; /* AI 消息靠左 */
+}
+
+/* 气泡本体 */
+.message .bubble {
+  max-width: 70%; /* 气泡最大宽度，防止太长 */
+  padding: 10px 15px;
+  border-radius: 12px; /* 圆角 */
+  position: relative;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word; /* 强制换行 */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 极淡的阴影 */
+}
+
+/* AI 气泡样式 */
+.message.ai .bubble {
+  background-color: #fff;
+  color: #333;
+  border-top-left-radius: 2px; /* 左上角直角或小圆角，增加指向性 */
+  border-bottom-left-radius: 2px;
+  border: 1px solid #eee; /* 极淡的边框 */
+}
+
+/* 用户气泡样式 */
+.message.user .bubble {
+  background-color: #1890ff; /* 亮蓝色 */
+  color: #fff;
+  border-top-right-radius: 2px; /* 右上角直角或小圆角 */
+  border-bottom-right-radius: 2px;
+}
+
+/* 针对 AI 消息中的 HTML 内容进行简单的样式重置 */
+.message.ai .bubble p {
+  margin: 0 0 8px 0;
+}
+.message.ai .bubble p:last-child {
+  margin-bottom: 0;
+}
+.message.ai .bubble ul, .message.ai .bubble ol {
+  margin: 0 0 8px 0;
+  padding-left: 20px;
+}
+.message.ai .bubble b {
+  font-weight: 600;
+  color: #000;
 }
