@@ -43,24 +43,90 @@ const Layout: React.FC<LayoutProps> = ({ left, middle, right }) => {
     <div className="flex flex-col h-screen bg-[#F0F4F8] text-[#1A1A1A] font-sans overflow-hidden">
 
       {/* --- 顶部工具栏 --- */}
-      <header className="h-14 bg-white border-b border-[#D1D9E6] flex items-center justify-between px-4 shrink-0 z-20 shadow-sm">
-        <div className="flex items-center space-x-4">
-          <button className="text-[#0056B3] font-semibold hover:bg-blue-50 px-3 py-1 rounded transition">
-            📂 打开
-          </button>
-          <button className="text-[#0056B3] font-semibold hover:bg-blue-50 px-3 py-1 rounded transition">
-            💾 保存
-          </button>
-        </div>
+    <header className="h-14 bg-white border-b border-[#D1D9E6] flex items-center justify-between px-4 shrink-0 z-20 shadow-sm">
 
-        <h1 className="text-lg font-bold text-[#0056B3]">AI WorkFlow Engine</h1>
+      {/* --- 左侧：双层下拉框 (替换原来的 打开/保存按钮) --- */}
+      <div className="flex items-center space-x-2">
 
-        <div className="flex items-center space-x-4">
-          <button className="text-[#0056B3] font-semibold hover:bg-blue-50 px-3 py-1 rounded transition">
-            ⚙️ 设置
-          </button>
-        </div>
-      </header>
+        {/* 1. 第一层：角色选择 */}
+        <select
+          value={currentRole || ''}
+          onChange={(e) => selectRole(e.target.value)}
+          className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500 bg-white"
+        >
+          <option value="" disabled>选择角色</option>
+          {Object.keys(datasets).map((role) => (
+            <option key={role} value={role}>{role}</option>
+          ))}
+        </select>
+
+        {/* 2. 第二层：文件选择 (仅在选择角色后显示) */}
+        {currentRole && datasets[currentRole] && (
+          <div className="flex items-center space-x-1 relative"> {/* relative 用于定位菜单 */}
+
+            <select
+              value={currentChatFile || ''}
+              onChange={(e) => selectChatFile(e.target.value)}
+              className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500 bg-white"
+            >
+              <option value="" disabled>选择记录</option>
+              {datasets[currentRole].map((file) => {
+                // 去掉 .jsonl 后缀用于显示
+                const displayName = file.replace('.jsonl', '');
+                return <option key={file} value={file}>{displayName}</option>;
+              })}
+            </select>
+
+            {/* 3. 操作按钮 (重命名/删除) */}
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="text-gray-500 hover:text-blue-600 px-1"
+              title="操作"
+            >
+              ⋮
+            </button>
+
+            {/* 悬浮菜单 */}
+            {showMenu && (
+              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg py-1 z-50 min-w-[100px]">
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    console.log('重命名功能待实现');
+                    setShowMenu(false);
+                  }}
+                >
+                  重命名
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  onClick={() => {
+                    console.log('删除功能待实现');
+                    setShowMenu(false);
+                  }}
+                >
+                  删除
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* --- 中间：标题 (替换原来的 AI WorkFlow Engine) --- */}
+      {/* 这里留空，或者您可以放一个小的 Logo/图标 */}
+      <div className="text-lg font-bold text-[#0056B3]">
+        {/* 可以在这里放图标，或者直接留空让布局更紧凑 */}
+      </div>
+
+      {/* --- 右侧：设置 (保留原来的代码) --- */}
+      <div className="flex items-center space-x-4">
+        <button className="text-[#0056B3] font-semibold hover:bg-blue-50 px-3 py-1 rounded transition">
+          ⚙️ 设置
+        </button>
+      </div>
+    </header>
+
 
       {/* --- 主体区域：三栏布局 --- */}
       <main className="flex-1 flex overflow-hidden">

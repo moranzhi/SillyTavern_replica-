@@ -1,26 +1,46 @@
 import axios from 'axios';
-import type { DatasetResponse, GenerateRequest, GenerateResponse } from '@/types';
+// 导入类型
+import type { GenerateRequest, GenerateResponse, Message } from '@/types';
 
-// 1. 创建 Axios 实例
-// 注意：这里使用相对路径 '/api' 是为了配合 vite.config.ts 中的代理配置
-// 这样在 Docker 内部请求会被转发到 http://backend:8000
-// 如果您更倾向于直接请求宿主机端口，也可以改为 'http://localhost:3001'
+// 定义角色列表接口
+// 结构: { "RoleName": ["file1.jsonl", "file2.jsonl"] }
+export interface ChatRoleListResponse {
+  [roleName: string]: string[];
+}
+
+//  创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: '/api',
-  timeout: 60000, // 本地生成可能较慢，设置 60s 超时
+  baseURL: '/api', // 配合 Vite 代理，转发到 http://backend:8000
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 2. API 接口函数封装
+// ==========================================
+// API 接口函数封装
+// ==========================================
 
 /**
- * 获取所有数据集和聊天记录列表
+ * 获取所有角色和聊天记录列表
  * 对应后端: GET /get_all_role_and_chat
  */
-export const getDatasets = async (): Promise<DatasetResponse> => {
-  const response = await apiClient.get<DatasetResponse>('/get_all_role_and_chat');
+export const getChatRoleList = async (): Promise<ChatRoleListResponse> => {
+  const response = await apiClient.get<ChatRoleListResponse>('/get_all_role_and_chat');
+  return response.data;
+};
+
+/**
+ * 获取特定聊天记录
+ * 对应后端: GET /chat_history?file_path=xxx.jsonl
+ *
+ * @param filePath - 文件路径，如 "RoleA/chat1.jsonl"
+ * @returns Message[] - 消息数组
+ */
+export const getChatHistory = async (filePath: string): Promise<Message[]> => {
+  const response = await apiClient.get<Message[]>('/chat_history', {
+    params: { file_path: filePath }
+  });
   return response.data;
 };
 
@@ -56,7 +76,6 @@ export const uploadImage = async (file: File): Promise<{ url: string }> => {
 };
 
 // 3. 预留：流式响应处理 (SSE)
-// 由于 Axios 对 SSE 支持一般，后续这里可能会改用原生 fetch 或 EventSource
 export const generateReplyStream = async (payload: GenerateRequest): Promise<void> => {
   // TODO: 待实现 SSE 逻辑
   console.log('SSE stream logic placeholder', payload);

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Message, ChatState, SpliceBlock, GenerationParams } from '@/types';
+import type { Message, SpliceBlock, GenerationParams } from '@/types';
 
 // --- 辅助函数：生成唯一 ID ---
 const generateId = (): string => {
@@ -24,36 +24,71 @@ const initialGenParams: GenerationParams = {
   stream: true,
 };
 
+// --- 状态接口定义 ---
+export interface ChatState {
+  // 1. 消息树状态
+  messages: Record<string, Message>;
+  currentMessageId: string | null;
+  isLoading: boolean;
+  inputMessage: string;
+
+  // 2. 设置状态
+  renderHtml: boolean;
+  selectedFile: string | null;
+  spliceBlocks: SpliceBlock[];
+  genParams: GenerationParams;
+
+  // 3. 角色与文件状态
+  datasets: Record<string, string[]>; // 存储角色列表字典
+  currentRole: string | null;
+  currentChatFile: string | null;
+}
+
 // --- Store 定义 ---
 export const useChatStore = create<ChatState>((set, get) => ({
+
   // --- 状态初始化 ---
   messages: {},
   currentMessageId: null,
-
   isLoading: false,
   inputMessage: "",
-
-  renderHtml: true, // 默认开启 HTML 渲染，对应原 app.py
+  renderHtml: true,
   selectedFile: null,
-
   spliceBlocks: initialSpliceBlocks,
   genParams: initialGenParams,
 
+  // --- 角色和文件列表 ---
+  datasets: {},         // 初始为空字典
+  currentRole: null,    // 初始未选中
+  currentChatFile: null, // 初始未选中
+
   // --- Actions (操作方法) ---
 
-  // 1. 设置输入框内容
+  // 1. 加载数据集列表
+  loadDatasets: (data: Record<string, string[]>) => set({ datasets: data }),
+
+  // 2. 选择角色
+  selectRole: (roleName: string) => set((state) => ({
+    currentRole: roleName,
+    currentChatFile: null // 切换角色时，必须清空文件选择
+  })),
+
+  // 3. 选择聊天文件
+  selectChatFile: (fileName: string) => set({ currentChatFile: fileName }),
+
+  // 4. 设置输入框内容
   setInputMessage: (text: string) => set({ inputMessage: text }),
 
-  // 2. 切换 HTML 渲染开关
+  // 5. 切换 HTML 渲染开关
   toggleRenderHtml: () => set((state) => ({ renderHtml: !state.renderHtml })),
 
-  // 3. 更新生成参数 (支持部分更新)
+  // 6. 更新生成参数
   updateGenParams: (newParams: Partial<GenerationParams>) =>
     set((state) => ({
       genParams: { ...state.genParams, ...newParams },
     })),
 
-  // 4. 切换拼接块状态 (即时生效)
+  // 7. 切换拼接块状态
   toggleSpliceBlock: (id: string | number) =>
     set((state) => ({
       spliceBlocks: state.spliceBlocks.map((block) =>
@@ -61,7 +96,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ),
     })),
 
-  // 5. 添加新消息 (用户发送或 AI 完整回复后调用)
+  // 8. 添加新消息
   addMessage: (role: 'user' | 'assistant', content: string, parentId: string | null = null) => {
     const newMessage: Message = {
       id: generateId(),
@@ -70,13 +105,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
       role,
       content,
       timestamp: Date.now(),
-      isStreaming: false, // 初始为非流式状态
+      isStreaming: false,
     };
 
     set((state) => {
       const newMessages = { ...state.messages, [newMessage.id]: newMessage };
 
-      // 如果有父节点，更新父节点的 childrenIds
       if (parentId) {
         const parent = state.messages[parentId];
         if (parent) {
@@ -93,10 +127,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
     });
 
-    return newMessage.id; // 返回新消息 ID，方便后续操作
+    return newMessage.id;
   },
 
-  // 6. 更新流式消息内容 (打字机效果)
+  // 9. 更新流式消息内容
   updateStreamingMessage: (messageId: string, contentChunk: string, isComplete: boolean = false) => {
     set((state) => {
       const currentMsg = state.messages[messageId];
@@ -108,21 +142,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
           [messageId]: {
             ...currentMsg,
             content: currentMsg.content + contentChunk,
-            isStreaming: !isComplete, // 如果完成，则结束流式状态
+            isStreaming: !isComplete,
           },
         },
       };
     });
   },
 
-  // 7. 切换当前消息分支 (点击历史消息时)
+  // 10. 切换当前消息分支
   switchBranch: (messageId: string) => {
     set({ currentMessageId: messageId });
   },
 
-  // 8. 设置加载状态
+  // 11. 设置加载状态
   setLoading: (loading: boolean) => set({ isLoading: loading }),
-
-  // 9. 设置当前选中的文件
-  setSelectedFile: (filePath: string | null) => set({ selectedFile: filePath }),
 }));
