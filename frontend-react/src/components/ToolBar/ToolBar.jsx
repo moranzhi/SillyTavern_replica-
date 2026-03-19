@@ -13,19 +13,31 @@ const Toolbar = ({
   const [roleData, setRoleData] = useState({});
 
   // 获取角色和聊天数据
-  React.useEffect(() => {
-    const fetchRoleData = async () => {
-      try {
-        const response = await fetch('/api/get_all_role_and_chat');
-        const data = await response.json();
-        setRoleData(data);
-      } catch (error) {
-        console.error('获取角色数据失败:', error);
+const fetchRoleData = async () => {
+  console.log('开始获取角色数据...');
+  try {
+    const response = await fetch('/api/tool_bar/get_all_role_and_chat', {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
-    };
+    });
+    console.log('响应状态:', response.status);
+    const data = await response.json();
+    console.log('获取到的数据:', data);
+    setRoleData(data);
+  } catch (error) {
+    console.error('获取角色数据失败:', error);
+  }
+};
 
-    fetchRoleData();
-  }, []);
+  // 处理下拉框展开/收起
+    const handleDropdownToggle = async () => {
+        await fetchRoleData();
+      setIsDropdownOpen(!isDropdownOpen);
+    };
 
   // 处理角色选择
   const handleRoleSelect = (role) => {
@@ -61,7 +73,7 @@ const Toolbar = ({
             <div className="dropdown-container">
               <div
                 className="dropdown-trigger"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={handleDropdownToggle}
               >
                 {selectedRole || '选择角色'}
                 <span className="dropdown-arrow">▼</span>

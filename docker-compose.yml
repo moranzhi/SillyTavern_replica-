@@ -3,14 +3,12 @@ version: '3.8'
 services:
   backend:
     build: ./backend
-    # 启动命令：明确指定 backend.api.route，并开启热重载
-    command: uvicorn backend.api.route:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "3001:8000"
     volumes:
-      # 挂载后端源码，实现代码热更新
       - ./backend:/app/backend
-      - ./data:/data
+      - ./data:/app/data
       - ./outputs:/outputs
     environment:
       - PYTHONUNBUFFERED=1
@@ -23,17 +21,13 @@ services:
     ports:
       - "3000:5173"
     volumes:
-      # 挂载前端源码，实现代码热更新
       - ./frontend-react:/app
-      # 匿名卷：防止宿主机的 node_modules 覆盖容器内的模块
-      # (这是前端 Docker 开发的最佳实践，防止因系统差异导致依赖不兼容)
       - /app/node_modules
     environment:
-      # 告诉前端后端地址
-      # 注意：这里使用 localhost 是因为它们都映射到了宿主机
-      # 在容器内部通信时，前端通过 Vite 代理转发到 http://backend:8000
-      - VITE_BACKEND_URL=http://localhost:3001
-    # 修改 command：先安装依赖（确保vite存在），再启动开发服务器（保留热更新）
+      # 如果不需要特定环境变量，可以完全移除 environment 部分
+      # 或者添加有效的环境变量，例如：
+      - NODE_ENV=development
+      - VITE_BACKEND_URL=http://backend:8000
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     depends_on:
       - backend

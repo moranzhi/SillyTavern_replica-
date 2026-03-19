@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from backend.core import config as cfg
 from pathlib import Path
-
+from ..core.items import ChatRequest
 
 # 假设 ChatRequest 定义在这里或者从其他地方导入
 # from backend.app.core.items import ChatRequest
