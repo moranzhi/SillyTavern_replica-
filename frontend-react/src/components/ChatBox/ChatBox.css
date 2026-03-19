@@ -2,18 +2,19 @@
 
 /* React 组件根容器 */
 .chat-box {
-  height: 95%;
+  height: 100%; /* 修改为100%，填满父容器 */
   width: 100%;
   display: flex;
   flex-direction: column;
   background-color: #fafafa;
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 /* 消息列表容器 */
 .chat-messages {
   flex: 1;
   min-height: 0;
-  max-height: 100%;
+  max-height: calc(95vh - 62px); /* 减去输入区域的高度 */
   overflow-y: auto;
   padding: 20px;
   padding-top: 60px;
@@ -147,7 +148,7 @@
   color: #333;
 }
 
-/* 消息工具栏 */
+/* 消息工具栏 - 优化布局使图标更紧凑 */
 .message-toolbar {
   display: flex;
   align-items: center;
@@ -172,7 +173,7 @@
 
 .toolbar-buttons {
   display: flex;
-  gap: 5px;
+  gap: 3px; /* 减少图标之间的间距 */
   margin: 0 5px;
 }
 
@@ -355,12 +356,16 @@
   background-color: #fff;
   border-top: 1px solid #ddd;
   padding: 10px 20px;
-  flex: 0 0 auto;
+  height: 62px; /* 明确设置高度 */
+  flex-shrink: 0; /* 防止被压缩 */
   display: flex;
   align-items: flex-end;
   gap: 10px;
   width: 100%;
+  position: relative;
+  z-index: 10;
 }
+
 
 .chat-input-area {
   flex: 1;

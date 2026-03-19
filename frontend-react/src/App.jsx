@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Toolbar from './components/Toolbar/Toolbar';
+import Toolbar from './components/ToolBar/ToolBar';
 import ChatBox from './components/ChatBox/ChatBox';
 import DicePanel from './components/DicePanel/DicePanel';
 import ImageDisplay from './components/ImageDisplay/ImageDisplay';
@@ -7,7 +7,6 @@ import PresetPanel from './components/PresetPanel/PresetPanel';
 import './index.css';
 
 function App() {
-  const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
 
@@ -24,11 +23,8 @@ function App() {
   return (
     <div className="app">
       <Toolbar
-        isExpanded={isToolbarExpanded}
-        onToggle={() => setIsToolbarExpanded(!isToolbarExpanded)}
         onRoleChange={handleRoleChange}
         onChatChange={handleChatChange}
-        selectedRole={selectedRole}
       />
 
       {/* 主内容容器 */}

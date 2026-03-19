@@ -1,80 +1,69 @@
 /* ==================== 顶部工具栏区域 ==================== */
 
 .toolbar {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 50px;
   background-color: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  z-index: 100;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: height 0.3s ease;
+  padding: 0 20px;
+  justify-content: flex-start; /* 确保内容从左到右排列 */
+  transition: all 0.3s ease;
 }
 
-.toolbar.expanded {
-  height: auto;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-bottom: 10px;
+/* 工具栏图标容器 */
+.toolbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-right: auto; /* 添加这行，确保图标靠左 */
 }
 
-.toolbar-content {
-  display: none;
-  width: 100%;
-  padding: 10px 20px;
-}
-
-.toolbar.expanded .toolbar-content {
-  display: block;
-}
-
-.toolbar-toggle-btn {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 50px;
-  width: 50px;
-  background: none;
-  border: none;
-  border-left: 1px solid #ddd;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: #666;
+/* 工具栏图标 */
+.toolbar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 101;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  color: #555;
+  background-color: #f5f5f5;
 }
 
-.toolbar-toggle-btn:hover {
-  background-color: #f5f5f5;
+.toolbar-icon:hover {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* ==================== 下拉框样式 ==================== */
 
 /* 工具栏下拉框容器 */
 .toolbar-dropdown {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .toolbar-dropdown label {
   display: block;
   margin-bottom: 5px;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
+  font-weight: 500;
 }
 
 /* 下拉框容器 */
 .dropdown-container {
   position: relative;
-  width: 100%;
-  max-width: 300px;
 }
 
 /* 下拉框触发器 */
@@ -83,16 +72,28 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dropdown-trigger:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .dropdown-arrow {
   margin-left: 8px;
-  font-size: 12px;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-trigger.open .dropdown-arrow {
+  transform: rotate(180deg);
 }
 
 /* 下拉菜单 */
@@ -100,23 +101,36 @@
   position: absolute;
   top: 100%;
   left: 0;
-  width: 100%;
+  min-width: 180px;
   background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 5px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  margin-top: 8px;
+  padding: 5px 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.dropdown-menu.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* 下拉菜单项 */
 .dropdown-item {
-  padding: 8px 12px;
+  padding: 10px 15px;
   cursor: pointer;
   position: relative;
   font-size: 14px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .dropdown-item:hover {
@@ -126,6 +140,7 @@
 .dropdown-item.selected {
   background-color: #e6f7ff;
   color: #1890ff;
+  font-weight: 500;
 }
 
 /* 嵌套下拉框 */
@@ -133,16 +148,60 @@
   position: absolute;
   left: 100%;
   top: 0;
-  width: 100%;
+  min-width: 180px;
   background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 11;
-  max-height: 200px;
-  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1002;
+  margin-left: 5px;
+  padding: 5px 0;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  /* 移除滚动条相关设置，让下拉框根据内容自动扩展 */
 }
 
-.nested-dropdown .dropdown-item {
-  padding-left: 20px;
+.nested-dropdown.visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* 添加指示箭头 */
+.dropdown-item.has-children::after {
+  content: '›';
+  font-size: 18px;
+  color: #999;
+  margin-left: 8px;
+  font-weight: 300;
+}
+
+.dropdown-item.selected.has-children::after {
+  color: #1890ff;
+}
+
+/* 主内容区域 */
+.main-container {
+  margin-top: 50px; /* 为固定工具栏留出空间 */
+  height: calc(100vh - 50px);
+  display: flex;
+  overflow: hidden;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(24, 144, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: #1890ff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

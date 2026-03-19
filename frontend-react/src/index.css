@@ -1,99 +1,61 @@
-/* ==================== 全局样式 ==================== */
-
-/* 全局重置与基础设置 */
+/* 重置样式 */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-html, body, #root {
+html, body, .app {
   height: 100%;
   width: 100%;
-  overflow: hidden; /* 禁止全局滚动 */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  overflow: hidden; /* 防止出现滚动条 */
 }
 
-/* 布局容器 */
-#root {
+.app {
   display: flex;
   flex-direction: column;
-  position: relative;
-  height: 100%;
-  width: 100%;
 }
 
-/* 滚动条美化 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-
-/* ==================== 主内容区域 ==================== */
-
+/* 主内容区域 */
 .main-container {
-  position: absolute;
-  top: 50px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  width: 100%;
+  flex: 1; /* 这会让主容器占据剩余的所有空间 */
   display: flex;
-  overflow: hidden;
+  overflow: hidden; /* 防止内容溢出 */
+  height: 100%; /* 确保高度填满 */
 }
 
 /* 左侧栏 */
 .sidebar-left {
-  width: 20%;
-  background-color: #fff;
-  border-right: 1px solid #ddd;
-  overflow-y: auto;
-  height: 100%;
+  width: 250px; /* 或者你想要的宽度 */
+  height:  继承父元素高度; /* 确保高度填满 */
+  overflow-y: auto; /* 内容过多时显示滚动条 */
 }
 
-/* 中间栏：聊天框 */
+/* 中间聊天区域 */
 .chat-area {
-  flex: 3;
-  background-color: #fafafa;
-  height: 100%;
+  flex: 1; /* 占据剩余空间 */
+  height: 100%; /* 确保高度填满 */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  position: relative;
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 /* 右侧栏 */
 .sidebar-right {
-  width: 20%;
-  background-color: #fff;
-  border-left: 1px solid #ddd;
+  width: 300px; /* 或者你想要的宽度 */
+  height: 100%; /* 确保高度填满 */
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
 }
 
-/* 右侧上下分割 */
-.right-top, .right-bottom {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  min-height: 0;
-}
-
+/* 右侧栏顶部 */
 .right-top {
-  border-bottom: 1px solid #ddd;
+  flex: 1; /* 占据剩余空间 */
+  overflow-y: auto;
+}
+
+/* 右侧栏底部 */
+.right-bottom {
+  height: 200px; /* 或者你想要的高度 */
+  overflow-y: auto;
 }
