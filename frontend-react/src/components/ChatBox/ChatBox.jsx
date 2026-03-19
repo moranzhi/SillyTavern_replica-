@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
+import './ChatBox.css';
 
 const ChatBox = () => {
   const [isHtmlRender, setIsHtmlRender] = useState(false);
   const [isImageGen, setIsImageGen] = useState(false);
   const [isDynamicTable, setIsDynamicTable] = useState(false);
-  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState('');
 
@@ -83,46 +83,6 @@ const ChatBox = () => {
     <div className="chat-box">
       {/* 上方：消息列表区域 */}
       <div className="chat-messages">
-
-        {/* 右上角：可折叠设置面板 */}
-        <div className={`settings-panel ${isSettingsExpanded ? 'expanded' : 'collapsed'}`}>
-          <div
-            className="settings-header"
-            onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-          >
-            {isSettingsExpanded ? '▼' : '⚙'}
-          </div>
-
-          {isSettingsExpanded && (
-            <div className="settings-options">
-              <div className="setting-item">
-                <label>HTML 渲染</label>
-                <input
-                  type="checkbox"
-                  checked={isHtmlRender}
-                  onChange={() => setIsHtmlRender(!isHtmlRender)}
-                />
-              </div>
-              <div className="setting-item">
-                <label>开启生图</label>
-                <input
-                  type="checkbox"
-                  checked={isImageGen}
-                  onChange={() => setIsImageGen(!isImageGen)}
-                />
-              </div>
-              <div className="setting-item">
-                <label>动态表格</label>
-                <input
-                  type="checkbox"
-                  checked={isDynamicTable}
-                  onChange={() => setIsDynamicTable(!isDynamicTable)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* 消息列表 */}
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.role}`}>

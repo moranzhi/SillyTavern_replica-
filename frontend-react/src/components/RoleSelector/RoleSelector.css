@@ -1,0 +1,95 @@
+/* ==================== 下拉框样式 ==================== */
+
+/* 角色选择器容器 */
+.role-selector {
+  width: 100%;
+}
+
+/* 下拉框容器 */
+.dropdown-container {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* 下拉框触发器 */
+.dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+/* 下拉菜单项 */
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  position: relative;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.selected {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 嵌套下拉框 */
+.nested-dropdown {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 11;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.nested-dropdown .dropdown-item {
+  padding-left: 20px;
+}
+
+/* 工具栏下拉框容器 */
+.toolbar-dropdown {
+  margin-bottom: 15px;
+}
+
+.toolbar-dropdown label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #333;
+}

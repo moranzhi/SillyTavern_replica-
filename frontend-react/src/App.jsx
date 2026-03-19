@@ -1,86 +1,61 @@
 import React, { useState } from 'react';
-
-// 引入各区域组件
-import PresetPanel from './components/PresetPanel';
-import ChatBox from './components/ChatBox';
-import ImageDisplay from './components/ImageDisplay';
-import DicePanel from './components/DicePanel';
-import RoleSelector from './components/RoleSelector';
+import Toolbar from './components/Toolbar/Toolbar';
+import ChatBox from './components/ChatBox/ChatBox';
+import DicePanel from './components/DicePanel/DicePanel';
+import ImageDisplay from './components/ImageDisplay/ImageDisplay';
+import PresetPanel from './components/PresetPanel/PresetPanel';
+import './index.css';
 
 function App() {
   const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedChat, setSelectedChat] = useState(null);
 
-  const toggleToolbar = () => {
-    setIsToolbarExpanded(!isToolbarExpanded);
-  };
-
-  // 处理角色选择变化
   const handleRoleChange = (role) => {
     setSelectedRole(role);
-    console.log('选择的角色:', role);
-    // 这里可以添加其他逻辑，比如加载角色的聊天记录等
+    console.log('角色已更改:', role);
   };
 
-  // 处理聊天选择变化
   const handleChatChange = (role, chat) => {
     setSelectedChat(chat);
-    console.log('选择的聊天:', role, chat);
-    // 这里可以添加其他逻辑，比如加载聊天内容等
+    console.log('聊天已更改:', role, chat);
   };
 
   return (
-    <div className="app-container">
-      {/* 顶部工具栏 */}
-      <header className={`toolbar ${isToolbarExpanded ? 'expanded' : ''}`}>
-        {/* 工具栏内容区域 */}
-        {isToolbarExpanded && (
-          <div className="toolbar-content">
-            {/* 角色选择器 */}
-            <RoleSelector
-              onRoleChange={handleRoleChange}
-              onChatChange={handleChatChange}
-            />
-          </div>
-        )}
+    <div className="app">
+      <Toolbar
+        isExpanded={isToolbarExpanded}
+        onToggle={() => setIsToolbarExpanded(!isToolbarExpanded)}
+        onRoleChange={handleRoleChange}
+        onChatChange={handleChatChange}
+        selectedRole={selectedRole}
+      />
 
-        {/* 工具栏切换按钮 */}
-        <button
-          className={`toolbar-toggle-btn ${isToolbarExpanded ? 'expanded' : ''}`}
-          onClick={toggleToolbar}
-          aria-label="Toggle Toolbar"
-        >
-          {isToolbarExpanded ? '▼' : '▲'}
-        </button>
-      </header>
-
-      {/* 主体内容区域 */}
-      <main className="main-container">
-
-        {/* 左侧：预设栏 (仿AI酒馆) */}
-        <section className="sidebar-left">
+      {/* 主内容容器 */}
+      <div className="main-container">
+        {/* 左侧栏 - 预设面板 */}
+        <div className="sidebar-left">
           <PresetPanel />
-        </section>
+        </div>
 
-        {/* 中间：历史对话框 + 输入框 */}
-        <section className="chat-area">
-          <ChatBox />
-        </section>
+        {/* 中间栏：聊天框 */}
+        <div className="chat-area">
+          <ChatBox
+            selectedRole={selectedRole}
+            selectedChat={selectedChat}
+          />
+        </div>
 
-        {/* 右侧：上下布局 */}
-        <section className="sidebar-right">
-          {/* 上方：图片展示区 */}
+        {/* 右侧栏 */}
+        <div className="sidebar-right">
           <div className="right-top">
-            <ImageDisplay />
+            <ImageDisplay />  {/* 图片展示放在顶部 */}
           </div>
-          {/* 下方：骰子区 */}
           <div className="right-bottom">
-            <DicePanel />
+            <DicePanel />  {/* 骰子面板放在底部 */}
           </div>
-        </section>
-
-      </main>
+        </div>
+      </div>
     </div>
   );
 }

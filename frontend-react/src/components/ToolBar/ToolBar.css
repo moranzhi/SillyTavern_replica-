@@ -1,0 +1,148 @@
+/* ==================== 顶部工具栏区域 ==================== */
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: height 0.3s ease;
+}
+
+.toolbar.expanded {
+  height: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.toolbar-content {
+  display: none;
+  width: 100%;
+  padding: 10px 20px;
+}
+
+.toolbar.expanded .toolbar-content {
+  display: block;
+}
+
+.toolbar-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 50px;
+  width: 50px;
+  background: none;
+  border: none;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+}
+
+.toolbar-toggle-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* ==================== 下拉框样式 ==================== */
+
+/* 工具栏下拉框容器 */
+.toolbar-dropdown {
+  margin-bottom: 15px;
+}
+
+.toolbar-dropdown label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 下拉框容器 */
+.dropdown-container {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* 下拉框触发器 */
+.dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+/* 下拉菜单项 */
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  position: relative;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.selected {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* 嵌套下拉框 */
+.nested-dropdown {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 11;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.nested-dropdown .dropdown-item {
+  padding-left: 20px;
+}

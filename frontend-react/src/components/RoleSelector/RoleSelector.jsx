@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './RoleSelector.css';
 
 const RoleSelector = ({ onRoleChange, onChatChange }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

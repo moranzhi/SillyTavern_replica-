@@ -1,0 +1,57 @@
+/* ==================== 顶部工具栏区域 ==================== */
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: height 0.3s ease;
+}
+
+.toolbar.expanded {
+  height: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.toolbar-content {
+  display: none;
+  width: 100%;
+  padding: 10px 20px;
+}
+
+.toolbar.expanded .toolbar-content {
+  display: block;
+}
+
+.toolbar-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 50px;
+  width: 50px;
+  background: none;
+  border: none;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+}
+
+.toolbar-toggle-btn:hover {
+  background-color: #f5f5f5;
+}
