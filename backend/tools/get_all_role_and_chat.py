@@ -9,7 +9,7 @@ def get_all_role_and_chat() -> Dict[str, List[str]]:
     读取配置目录下的所有子文件夹，并收集每个子文件夹中的 JSONL 文件
 
     返回:
-        dict: 字典结构，键是文件夹名称，值是该文件夹中的 JSONL 文件列表
+        dict: 字典结构，键是文件夹名称，值是该文件夹中的 JSONL 文件列表（仅文件名，无路径和后缀）
     """
     result = {}
 
@@ -33,7 +33,8 @@ def get_all_role_and_chat() -> Dict[str, List[str]]:
                 # 遍历子文件夹中的所有文件
                 for file in entry.iterdir():
                     if file.is_file() and file.suffix == '.jsonl':
-                        jsonl_files.append(str(file))
+                        # 使用 file.stem 获取不带后缀的文件名
+                        jsonl_files.append(file.stem)
                         print(f"  找到文件: {file.name}")  # 调试信息
 
                 # 如果该文件夹中有 JSONL 文件，则添加到结果中
