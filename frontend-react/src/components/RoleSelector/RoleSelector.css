@@ -3,342 +3,343 @@
 .role-selector {
   width: 100%;
   height: 100%;
-}
-
-/* ==================== 角色面板样式 ==================== */
-
-.role-panel {
-  width: 100%;
-  height: 100%;
-}
-
-.panel-controls {
+  padding: 24px;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* 添加微妙的背景纹理 */
+  background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
+  /* 添加平滑滚动 */
+  scroll-behavior: smooth;
+  /* 优化移动端体验 */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==================== 当前选中角色显示 ==================== */
+
+.selected-role-display {
+  padding: 16px 24px;
+  border-radius: 12px;
+  /* 更丰富的渐变效果 */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin-bottom: 24px;
+  /* 增强阴影效果 */
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  /* 添加微妙的动画效果 */
+  transition: all 0.3s ease;
 }
 
-.search-box {
-  flex: 1;
-  margin-right: 16px;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 10px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-}
-
-.add-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background-color: #1890ff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.add-button:hover {
-  background-color: #40a9ff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
-}
-
-.add-button .icon {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.panel-list-container {
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 80px);
-}
-
-.loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  gap: 12px;
-  color: #666;
-}
-
-.loading-spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(24, 144, 255, 0.2);
-  border-radius: 50%;
-  border-top-color: #1890ff;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: #999;
-}
-
-/* ==================== 角色卡片网格布局 ==================== */
-
-.role-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-/* ==================== 角色卡片样式 ==================== */
-
-.role-card {
-  border-radius: 8px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.role-card:hover {
-  background-color: #f5f5f5;
-  border-color: #1890ff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+/* 悬停效果 */
+.selected-role-display:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
-.role-card.selected {
-  background-color: #e6f7ff;
-  border-color: #1890ff;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+.role-badge {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
 }
 
-.role-card-header {
+.role-badge.empty {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.role-label {
+  font-weight: 600;
+  margin-right: 8px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.role-name {
+  color: #fff;
+  font-weight: 600;
+}
+
+.chat-name {
+  color: rgba(255, 255, 255, 0.85);
+  margin-left: 8px;
+}
+
+/* ==================== 搜索栏样式 ==================== */
+
+.search-bar {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 16px 12px 40px; /* 为搜索图标留出空间 */
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 添加搜索图标 */
+.search-bar::before {
+  content: '🔍';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.search-bar input::placeholder {
+  color: #a0a0a0;
+}
+
+/* ==================== 角色列表样式 ==================== */
+
+.role-list {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 响应式网格布局 */
+  gap: 16px;
+  padding-right: 8px;
+  padding-bottom: 8px;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Webkit浏览器滚动条样式 */
+.role-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.role-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.role-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+.role-item {
+  border: none;
+  border-radius: 14px;
+  background-color: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  min-height: 140px;
+  position: relative;
+  /* 添加微妙的边框效果 */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.role-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+}
+
+.role-item.active {
+  border: 2px solid #667eea;
+  background-color: #f5f7ff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.role-header {
   padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  flex: 1;
 }
 
-.role-name {
+.role-header .role-name {
   font-size: 15px;
-  color: #333;
-  font-weight: 500;
+  font-weight: 600;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.role-card.selected .role-name {
-  color: #1890ff;
+.role-item.active .role-header .role-name {
+  color: #667eea;
 }
 
-.role-chat-count {
-  font-size: 12px;
-  color: #999;
-  background-color: #f0f0f0;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.role-card-actions {
+.role-actions {
   display: flex;
-  justify-content: flex-end;
-  padding: 8px 12px;
+  gap: 4px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.role-card:hover .role-card-actions,
-.role-card.clicked .role-card-actions {
+.role-item:hover .role-actions {
   opacity: 1;
 }
 
-.action-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
+.icon-btn {
+  background: rgba(255, 255, 255, 0.95);
   border: none;
-  background-color: #f5f5f5;
-  color: #666;
   cursor: pointer;
+  font-size: 14px;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.action-button:hover {
-  background-color: #e6f7ff;
-  color: #1890ff;
+.icon-btn:hover {
+  background-color: #fff;
+  transform: scale(1.1);
 }
 
-.edit-button:hover {
-  background-color: #e6f7ff;
-  color: #1890ff;
-}
-
-.delete-button:hover {
+.icon-btn.delete:hover {
   background-color: #fff1f0;
   color: #ff4d4f;
-}
-
-.role-card-header input {
-  padding: 6px 10px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 14px;
-  width: 150px;
-}
-
-.role-card-header input:focus {
-  outline: none;
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
 }
 
 /* ==================== 聊天列表样式 ==================== */
 
 .chat-list {
-  margin-top: 0;
-  border-top: 1px solid #e0e0e0;
-  padding: 12px;
-  background-color: #fafafa;
-  animation: slideDown 0.2s ease;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.chat-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-top: 1px solid #f0f0f0;
   padding: 8px 0;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 8px;
+  background-color: #fafbfc;
+  max-height: 140px;
+  overflow-y: auto;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
-.chat-list-header span {
-  font-size: 13px;
-  font-weight: 500;
-  color: #333;
+/* Webkit浏览器滚动条样式 */
+.chat-list::-webkit-scrollbar {
+  width: 4px;
 }
 
-.add-chat-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background-color: #1890ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
+.chat-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.add-chat-button:hover {
-  background-color: #40a9ff;
-}
-
-.add-chat-button .icon {
-  font-size: 14px;
-  font-weight: bold;
+.chat-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 2px;
 }
 
 .chat-item {
-  padding: 10px 12px;
+  padding: 10px 16px 10px 20px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 4px;
-  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  /* 添加微妙的左边框指示器 */
+  border-left: 3px solid transparent;
 }
 
 .chat-item:hover {
-  background-color: #f0f0f0;
+  background-color: #f0f2f5;
 }
 
-.chat-item.selected {
-  background-color: #e6f7ff;
-  color: #1890ff;
+.chat-item.active {
+  background-color: #eef1ff;
+  color: #667eea;
+  /* 激活状态添加左边框指示器 */
+  border-left-color: #667eea;
 }
 
-.chat-name {
+.chat-item .chat-name {
   font-size: 13px;
-  color: #333;
-}
-
-.chat-item.selected .chat-name {
-  color: #1890ff;
   font-weight: 500;
+  color: #4b5563;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.chat-actions {
+.chat-item.active .chat-name {
+  font-weight: 600;
+  color: #667eea;
+}
+
+/* ==================== 加载和空状态 ==================== */
+
+.loading,
+.empty-state {
   display: flex;
-  gap: 6px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #9ca3af;
+  font-size: 14px;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.chat-item:hover .chat-actions {
-  opacity: 1;
+/* 添加加载动画 */
+.loading::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-.chat-content input {
-  padding: 6px 10px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 13px;
-  width: 180px;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.chat-content input:focus {
-  outline: none;
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+/* 添加空状态图标 */
+.empty-state::before {
+  content: '📭';
+  font-size: 48px;
+  opacity: 0.5;
 }
 
 /* ==================== 模态框样式 ==================== */
 
-.modal-overlay {
+.delete-confirm-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.2s ease-out;
+  /* 添加微妙的背景动画 */
+  background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
 }
 
 @keyframes fadeIn {
@@ -352,17 +353,19 @@
 
 .modal-content {
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 28px;
   width: 90%;
-  max-width: 400px;
-  padding: 24px;
-  animation: slideDown 0.3s ease;
+  max-width: 420px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 添加微妙的边框效果 */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-@keyframes slideDown {
+@keyframes slideUp {
   from {
-    transform: translateY(-20px);
+    transform: translateY(24px);
     opacity: 0;
   }
   to {
@@ -372,16 +375,17 @@
 }
 
 .modal-content h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .modal-content p {
-  margin: 0 0 24px 0;
-  font-size: 14px;
-  color: #666;
+  margin-bottom: 28px;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .modal-actions {
@@ -390,30 +394,140 @@
   gap: 12px;
 }
 
-.modal-button {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.modal-actions button {
+  padding: 11px 24px;
+  border-radius: 10px;
   border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  /* 添加微妙的阴影效果 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.cancel-button {
-  background-color: #f5f5f5;
-  color: #666;
+.modal-actions button:first-child {
+  background-color: #f3f4f6;
+  color: #4b5563;
 }
 
-.cancel-button:hover {
-  background-color: #e6e6e6;
-  color: #333;
+.modal-actions button:first-child:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
 }
 
-.confirm-button {
-  background-color: #ff4d4f;
+.modal-actions button.danger {
+  background-color: #ef4444;
   color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
-.confirm-button:hover {
-  background-color: #ff7875;
+.modal-actions button.danger:hover {
+  background-color: #f87171;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ==================== 响应式设计 ==================== */
+
+@media (max-width: 768px) {
+  .role-selector {
+    padding: 16px;
+  }
+
+  .role-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .role-item {
+      border: none;
+      border-radius: 14px;
+      background-color: #fff;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      min-height: 160px; /* 修改：增加最小高度，使其更适配宽度 */
+      position: relative;
+      /* 添加微妙的边框效果 */
+      border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .role-list {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-role-display {
+    padding: 12px 16px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* ==================== 暗色模式支持 ==================== */
+
+@media (prefers-color-scheme: dark) {
+  .role-selector {
+    background-color: #1f2937;
+    background-image: radial-gradient(#374151 1px, transparent 1px);
+  }
+
+  .role-item {
+    background-color: #374151;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .role-item:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .role-header .role-name {
+    color: #f9fafb;
+  }
+
+  .chat-list {
+    background-color: #374151;
+    border-top-color: #4b5563;
+  }
+
+  .chat-item:hover {
+    background-color: #4b5563;
+  }
+
+  .chat-item .chat-name {
+    color: #d1d5db;
+  }
+
+  .search-bar input {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+
+  .modal-content {
+    background-color: #374151;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .modal-content h3 {
+    color: #f9fafb;
+  }
+
+  .modal-content p {
+    color: #d1d5db;
+  }
 }

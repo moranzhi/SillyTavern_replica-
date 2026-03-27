@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import './ChatBox.css';
 
-const ChatBox = () => {
+const ChatBox = ({ selectedRole, selectedChat }) => {
   const [isHtmlRender, setIsHtmlRender] = useState(false);
   const [isImageGen, setIsImageGen] = useState(false);
   const [isDynamicTable, setIsDynamicTable] = useState(false);
