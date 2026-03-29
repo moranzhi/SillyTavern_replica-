@@ -140,7 +140,7 @@ if __name__ == '__main__':
     async def test():
         req = MockChatRequest(
             mes="这是重roll后的新回复2",
-            role_name="test",
+            role_name="testRole1",
             chat_name="111",
             name="AI",
             is_user=False,

@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+import useChatBoxStore from '../../Store/Slices/ChatBoxSlice';
 import './ChatBox.css';
 
-const ChatBox = ({ selectedRole, selectedChat }) => {
+const ChatBox = () => {
   const [isHtmlRender, setIsHtmlRender] = useState(false);
   const [isImageGen, setIsImageGen] = useState(false);
   const [isDynamicTable, setIsDynamicTable] = useState(false);
@@ -9,6 +10,9 @@ const ChatBox = ({ selectedRole, selectedChat }) => {
   const [editContent, setEditContent] = useState('');
 
   const textareaRef = useRef(null);
+
+  // 从 store 获取状态
+  const { messages, userName, characterName, isLoading, error } = useChatBoxStore();
 
   // 自动调整 Textarea 高度
   const adjustHeight = () => {
@@ -60,36 +64,21 @@ const ChatBox = ({ selectedRole, selectedChat }) => {
     setEditContent('');
   };
 
-  // 生成示例数据
-  const generateMessages = () => {
-    const messages = [];
-    for (let i = 1; i <= 150; i++) {
-      const isUser = i % 2 !== 0;
-      messages.push({
-        id: i,
-        role: isUser ? 'user' : 'ai',
-        name: isUser ? '我' : 'AI助手',
-        content: isUser
-          ? `这是第 ${i} 条用户消息。这是一段比较长的文本，用来测试气泡的换行效果以及滚动条的表现。`
-          : `这是第 ${i} 条 AI 回复。<b>包含 HTML 标签</b>的内容。如果渲染开关开启，这里应该显示粗体字。如果不开启，应该显示原始标签。`
-      });
-    }
-    return messages;
-  };
-
-  const messages = generateMessages();
-
   return (
     <div className="chat-box">
       {/* 上方：消息列表区域 */}
       <div className="chat-messages">
+        {/* 加载状态和错误信息 */}
+        {isLoading && <div className="loading">加载中...</div>}
+        {error && <div className="error">{error}</div>}
+
         {/* 消息列表 */}
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.role}`}>
             <div className="message-container">
               {/* 消息名称和工具栏在同一行 */}
               <div className="message-header">
-                <div className="message-name">{msg.name}</div>
+                <div className="message-name">{msg.role === 'user' ? userName : characterName}</div>
 
                 {/* 消息工具栏 */}
                 <div className="message-toolbar">

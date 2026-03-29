@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import useRoleSelectorStore from '../../store/Slices/RoleSelectorSlice';
+import useChatBoxStore from '../../Store/Slices/ChatBoxSlice';
 import './RoleSelector.css';
 
-const RoleSelector = ({ onRoleChange, onChatChange }) => {
+const RoleSelector = () => {
   const panelRef = useRef(null);
 
   // 从 Zustand store 中获取状态和操作
@@ -37,6 +38,9 @@ const RoleSelector = ({ onRoleChange, onChatChange }) => {
     resetPanel
   } = useRoleSelectorStore();
 
+  // 从 ChatBoxStore 获取状态更新方法
+  const { setCurrentRole, setCurrentChat } = useChatBoxStore();
+
   // 组件挂载时获取数据
   useEffect(() => {
     fetchRoleData();
@@ -59,41 +63,56 @@ const RoleSelector = ({ onRoleChange, onChatChange }) => {
   // 处理角色选择
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-    if (onRoleChange) {
-      onRoleChange(role);
-    }
+    // 更新 ChatBoxStore 中的当前角色
+    setCurrentRole(role);
 
     // 如果该角色有聊天记录，默认选择第一个
     if (roleData[role] && roleData[role].length > 0) {
       const firstChat = roleData[role][0];
       setSelectedChat(firstChat);
-      if (onChatChange) {
-        onChatChange(role, firstChat);
-      }
+      // 更新 ChatBoxStore 中的当前聊天
+      setCurrentChat(firstChat);
     } else {
       setSelectedChat(null);
+      // 清除 ChatBoxStore 中的当前聊天
+      setCurrentChat(null);
     }
   };
 
   // 处理聊天选择
   const handleChatSelect = (chat) => {
-    setSelectedChat(chat);
-    setHoveredRole(null);
-    setClickedRole(null);
-    if (onChatChange) {
-      onChatChange(selectedRole, chat);
-    }
+      // 获取当前展开的角色（聊天所属的角色）
+      const currentRole = hoveredRole || clickedRole;
+
+      setSelectedChat(chat);
+      setSelectedRole(currentRole); // 使用当前展开的角色
+      setHoveredRole(null);
+      setClickedRole(null);
+      // 更新 ChatBoxStore 中的当前聊天和角色
+      setCurrentChat(chat);
+      setCurrentRole(currentRole);
   };
 
   // 处理角色卡片点击
-  const handleRoleCardClick = (role) => {
-    if (clickedRole === role) {
-      setClickedRole(null);
-    } else {
-      setClickedRole(role);
-      handleRoleSelect(role);
-    }
-  };
+    const handleRoleCardClick = (role) => {
+      if (clickedRole === role) {
+        setClickedRole(null);
+        // 取消选择角色时，更新 selectedRole 和 selectedChat
+        setSelectedRole(null);
+        setSelectedChat(null);
+        // 同步更新 ChatBoxStore 中的状态
+        setCurrentRole(null);
+        setCurrentChat(null);
+      } else {
+        setClickedRole(role);
+        handleRoleSelect(role);
+        setSelectedRole(role);
+        setSelectedChat(chat);
+        // 同步更新 ChatBoxStore 中的状态
+        setSele
+      }
+    };
+
 
   // 处理搜索
   const handleSearchChange = (e) => {
@@ -112,9 +131,8 @@ const RoleSelector = ({ onRoleChange, onChatChange }) => {
     const newName = e.target.value;
     handleRenameRole(oldName, newName);
     if (selectedRole === oldName && newName && newName !== oldName) {
-      if (onRoleChange) {
-        onRoleChange(newName);
-      }
+      // 更新 ChatBoxStore 中的当前角色
+      setCurrentRole(newName);
     }
   };
 
@@ -130,9 +148,8 @@ const RoleSelector = ({ onRoleChange, onChatChange }) => {
     const newName = e.target.value;
     handleRenameChat(oldName, newName);
     if (selectedChat === oldName && newName && newName !== oldName) {
-      if (onChatChange) {
-        onChatChange(selectedRole, newName);
-      }
+      // 更新 ChatBoxStore 中的当前聊天
+      setCurrentChat(selectedRole, newName);
     }
   };
 
@@ -147,13 +164,12 @@ const RoleSelector = ({ onRoleChange, onChatChange }) => {
   const confirmDeleteWrapper = () => {
     confirmDelete();
     if (deleteType === 'role' && selectedRole === showDeleteConfirm) {
-      if (onRoleChange) {
-        onRoleChange(null);
-      }
+      // 清除 ChatBoxStore 中的当前角色和聊天
+      setCurrentRole(null);
+      setCurrentChat(null);
     } else if (deleteType === 'chat' && selectedChat === showDeleteConfirm) {
-      if (onChatChange) {
-        onChatChange(selectedRole, null);
-      }
+      // 清除 ChatBoxStore 中的当前聊天
+      setCurrentChat(null);
     }
   };
 
