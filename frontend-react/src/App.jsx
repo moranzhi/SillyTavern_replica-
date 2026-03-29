@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Toolbar from './components/ToolBar/ToolBar';
 import ChatBox from './components/ChatBox/ChatBox';
 import DicePanel from './components/DicePanel/DicePanel';
@@ -7,25 +7,9 @@ import PresetPanel from './components/PresetPanel/PresetPanel';
 import './index.css';
 
 function App() {
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [selectedChat, setSelectedChat] = useState(null);
-
-  const handleRoleChange = (role) => {
-    setSelectedRole(role);
-    console.log('角色已更改:', role);
-  };
-
-  const handleChatChange = (role, chat) => {
-    setSelectedChat(chat);
-    console.log('聊天已更改:', role, chat);
-  };
-
   return (
     <div className="app">
-      <Toolbar
-        onRoleChange={handleRoleChange}
-        onChatChange={handleChatChange}
-      />
+      <Toolbar />
 
       {/* 主内容容器 */}
       <div className="main-container">
@@ -36,10 +20,7 @@ function App() {
 
         {/* 中间栏：聊天框 */}
         <div className="chat-area">
-          <ChatBox
-            selectedRole={selectedRole}
-            selectedChat={selectedChat}
-          />
+          <ChatBox />
         </div>
 
         {/* 右侧栏 */}

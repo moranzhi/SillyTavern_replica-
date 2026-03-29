@@ -403,3 +403,27 @@
 .send-button:hover {
   background-color: #40a9ff;
 }
+
+/* 加载状态样式 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* 错误信息样式 */
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #f5222d;
+  font-size: 14px;
+  background-color: rgba(245, 34, 45, 0.05);
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
