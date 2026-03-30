@@ -1,153 +1,130 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useChatBoxStore from '../../Store/Slices/ChatBoxSlice';
 import './ChatBox.css';
 
 const ChatBox = () => {
-  const [isHtmlRender, setIsHtmlRender] = useState(false);
-  const [isImageGen, setIsImageGen] = useState(false);
-  const [isDynamicTable, setIsDynamicTable] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const messagesEndRef = useRef(null);
 
-  const textareaRef = useRef(null);
+  // 从 ChatBoxStore 获取状态和方法
+  const {
+    messages,
+    isLoading,
+    error,
+    userName,
+    characterName,
+    updateMessage
+  } = useChatBoxStore();
 
-  // 从 store 获取状态
-  const { messages, userName, characterName, isLoading, error } = useChatBoxStore();
-
-  // 自动调整 Textarea 高度
-  const adjustHeight = () => {
-    const textarea = textareaRef.current;
-    const wrapper = textarea?.closest('.chat-input-wrapper');
-
-    if (textarea && wrapper) {
-      textarea.style.height = '42px';
-      wrapper.style.height = 'auto';
-      const newHeight = textarea.scrollHeight;
-
-      if (newHeight > 42) {
-        textarea.style.height = newHeight + 'px';
-      } else {
-        textarea.style.height = '42px';
-      }
-    }
+  // 自动滚动到底部
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleInput = () => {
-    adjustHeight();
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // 处理编辑消息
+  const handleEdit = (message) => {
+    setEditingId(message.floor);
+    setEditContent(message.mes);
   };
 
-  // 开始编辑消息
-  const startEdit = (id, content) => {
-    setEditingId(id);
-    setEditContent(content);
-  };
-
-  // 保存编辑的消息
-  const saveEdit = (id) => {
-    // 这里可以添加向后端发送请求的代码
-    console.log(`保存消息 ${id} 的编辑内容: ${editContent}`);
-
-    // 更新前端显示
-    const messageIndex = messages.findIndex(msg => msg.id === id);
-    if (messageIndex !== -1) {
-      messages[messageIndex].content = editContent;
-    }
-
-    // 退出编辑模式
+  // 保存编辑
+  const handleSaveEdit = (messageId) => {
+    // 调用 store 中的 updateMessage 方法
+    updateMessage(messageId, editContent);
     setEditingId(null);
     setEditContent('');
   };
 
   // 取消编辑
-  const cancelEdit = () => {
+  const handleCancelEdit = () => {
     setEditingId(null);
     setEditContent('');
   };
 
-  return (
-    <div className="chat-box">
-      {/* 上方：消息列表区域 */}
-      <div className="chat-messages">
-        {/* 加载状态和错误信息 */}
-        {isLoading && <div className="loading">加载中...</div>}
-        {error && <div className="error">{error}</div>}
+  // 渲染单条消息
+  const renderMessage = (message) => {
+    const isUser = message.is_user;
+    const isEditing = editingId === message.floor;
 
-        {/* 消息列表 */}
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message ${msg.role}`}>
-            <div className="message-container">
-              {/* 消息名称和工具栏在同一行 */}
-              <div className="message-header">
-                <div className="message-name">{msg.role === 'user' ? userName : characterName}</div>
+    // 根据消息类型设置显示名称
+    const displayName = isUser ? userName : characterName;
 
-                {/* 消息工具栏 */}
-                <div className="message-toolbar">
-                  <span className="message-id">ID: {msg.id}</span>
-                  <div className="toolbar-buttons">
-                    <button
-                      className="toolbar-button edit-button"
-                      onClick={() => startEdit(msg.id, msg.content)}
-                    >
-                      编辑
-                    </button>
-                    <button className="toolbar-button expand-button">
-                      ⋮
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 消息内容 */}
-              <div className="message-content">
-                <div className="bubble">
-                  {editingId === msg.id ? (
-                    <div className="edit-container">
-                      <textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="edit-textarea"
-                      />
-                      <div className="edit-buttons">
-                        <button
-                          className="save-button"
-                          onClick={() => saveEdit(msg.id)}
-                        >
-                          保存
-                        </button>
-                        <button
-                          className="cancel-button"
-                          onClick={cancelEdit}
-                        >
-                          取消
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    isHtmlRender ? (
-                      <div dangerouslySetInnerHTML={{ __html: msg.content }} />
-                    ) : (
-                      <div>{msg.content}</div>
-                    )
-                  )}
-                </div>
+    return (
+      <div key={message.floor} className={`message ${isUser ? 'user' : 'ai'}`}>
+        <div className="message-container">
+          <div className="message-header">
+            <span className="message-name">{displayName}</span>
+            <span className="message-id">#{message.floor}</span>
+            <div className="message-toolbar">
+              <div className="toolbar-buttons">
+                <button
+                  className="toolbar-button"
+                  onClick={() => handleEdit(message)}
+                  title="编辑"
+                >
+                  ✎
+                </button>
+                <button
+                  className="toolbar-button"
+                  title="更多"
+                >
+                  •••
+                </button>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* 下方：输入框区域 */}
-      <div className="chat-input-wrapper">
-        <div className="chat-input-area">
-          <textarea
-            ref={textareaRef}
-            placeholder="输入消息..."
-            onInput={handleInput}
-            rows="1"
-            style={{ height: '42px' }}
-          />
+          <div className="message-content">
+            {isEditing ? (
+              <div className="edit-container">
+                <textarea
+                  className="edit-textarea"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                />
+                <div className="edit-buttons">
+                  <button
+                    className="cancel-button"
+                    onClick={handleCancelEdit}
+                  >
+                    取消
+                  </button>
+                  <button
+                    className="save-button"
+                    onClick={() => handleSaveEdit(message.floor)}
+                  >
+                    保存
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bubble">
+                {message.mes}
+              </div>
+            )}
+          </div>
         </div>
-        <button className="send-button">发送</button>
+      </div>
+    );
+  };
+
+  return (
+    <div className="chat-box">
+      <div className="chat-messages">
+        {isLoading ? (
+          <div className="loading">加载中...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : messages.length === 0 ? (
+          <div className="loading">暂无消息</div>
+        ) : (
+          messages.map(renderMessage)
+        )}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

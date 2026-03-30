@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from ..core.items import ChatRequest
 from ..tools.get_all_role_and_chat import get_all_role_and_chat
-from ..core.models import chat_history
+from ..core.models.chat_history import ChatHistory  # 修改导入语句
 
 router = APIRouter()
 
@@ -12,9 +12,9 @@ def get_all_role_and_chat_endpoint():
     return get_all_role_and_chat()
 
 # 2. 根据rolename和chatname读取特定聊天记录
-@router.post("/chat_box/get_chat_history")
+@router.get("/chat_box/get_chat_history")
 async def get_chat_history_endpoint(role_name: str, chat_name: str):
     # 实例化工具类
-    reader = chat_history.load_from_file(role_name, chat_name)
+    reader = ChatHistory.load_from_file(role_name, chat_name)
 
     return reader.to_chatbox_format()

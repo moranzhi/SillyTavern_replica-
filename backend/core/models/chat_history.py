@@ -49,7 +49,8 @@ class ChatMetadata(BaseModel):
     note_interval: int = Field(0, description="笔记插入间隔数")
     note_position: int = Field(0, description="笔记插入位置")
     note_depth: int = Field(0, description="笔记插入深度")
-    note_role: str = Field("", description="笔记使用角色类型")
+    # 0：System，1：User，2：Assistant
+    note_role: int = Field("", description="笔记使用角色类型")
 
     # 扩展信息
     extensions: Dict[str, Any] = Field(

@@ -1,3 +1,23 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh; /* 使用视口高度作为基准 */
+  width: 100%;
+}
+
+.app {
+  height: 100%; /* 继承body的100vh */
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* 重置样式 */
 * {
   margin: 0;
@@ -21,7 +41,6 @@ html, body, .app {
   flex: 1; /* 这会让主容器占据剩余的所有空间 */
   display: flex;
   overflow: hidden; /* 防止内容溢出 */
-  height: 100%; /* 确保高度填满 */
 }
 
 /* 左侧栏 */
@@ -58,4 +77,9 @@ html, body, .app {
 .right-bottom {
   height: 200px; /* 或者你想要的高度 */
   overflow-y: auto;
+}
+
+.toolbar {
+  height: 60px; /* 或其他合适的固定高度 */
+  flex-shrink: 0; /* 防止被压缩 */
 }

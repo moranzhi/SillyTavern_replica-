@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import useRoleSelectorStore from '../../store/Slices/RoleSelectorSlice';
 import useChatBoxStore from '../../Store/Slices/ChatBoxSlice';
+
 import './RoleSelector.css';
 
 const RoleSelector = () => {
@@ -22,6 +23,7 @@ const RoleSelector = () => {
     fetchRoleData,
     setSelectedRole,
     setSelectedChat,
+    setSelectedRoleAndChat,
     setHoveredRole,
     setClickedRole,
     setSearchTerm,
@@ -39,7 +41,10 @@ const RoleSelector = () => {
   } = useRoleSelectorStore();
 
   // 从 ChatBoxStore 获取状态更新方法
-  const { setCurrentRole, setCurrentChat } = useChatBoxStore();
+  const chatBoxStore = useChatBoxStore();
+  const { setCurrentRole, setCurrentChat } = chatBoxStore;
+  const setChatBoxRoleAndChat = chatBoxStore.setChatBoxRoleAndChat;
+
 
   // 组件挂载时获取数据
   useEffect(() => {
@@ -62,57 +67,47 @@ const RoleSelector = () => {
 
   // 处理角色选择
   const handleRoleSelect = (role) => {
-    setSelectedRole(role);
-    // 更新 ChatBoxStore 中的当前角色
-    setCurrentRole(role);
-
     // 如果该角色有聊天记录，默认选择第一个
     if (roleData[role] && roleData[role].length > 0) {
       const firstChat = roleData[role][0];
-      setSelectedChat(firstChat);
-      // 更新 ChatBoxStore 中的当前聊天
-      setCurrentChat(firstChat);
+      // 使用新的原子操作方法同时更新角色和聊天
+      setSelectedRoleAndChat(role, firstChat);
+      // 同步更新 ChatBoxStore 中的状态
+      setChatBoxRoleAndChat(role, firstChat);
     } else {
-      setSelectedChat(null);
-      // 清除 ChatBoxStore 中的当前聊天
-      setCurrentChat(null);
+      // 清空角色和聊天
+      setSelectedRoleAndChat(null, null);
+      // 同步更新 ChatBoxStore 中的状态
+      setChatBoxRoleAndChat(null, null);
     }
   };
 
   // 处理聊天选择
   const handleChatSelect = (chat) => {
-      // 获取当前展开的角色（聊天所属的角色）
-      const currentRole = hoveredRole || clickedRole;
+    // 获取当前展开的角色（聊天所属的角色）
+    const currentRole = hoveredRole || clickedRole;
 
-      setSelectedChat(chat);
-      setSelectedRole(currentRole); // 使用当前展开的角色
-      setHoveredRole(null);
-      setClickedRole(null);
-      // 更新 ChatBoxStore 中的当前聊天和角色
-      setCurrentChat(chat);
-      setCurrentRole(currentRole);
+    // 使用新的原子操作方法同时更新角色和聊天
+    setSelectedRoleAndChat(currentRole, chat);
+    // 同步更新 ChatBoxStore 中的状态
+    setChatBoxRoleAndChat(currentRole, chat);
+    setHoveredRole(null);
+    setClickedRole(null);
   };
 
   // 处理角色卡片点击
-    const handleRoleCardClick = (role) => {
-      if (clickedRole === role) {
-        setClickedRole(null);
-        // 取消选择角色时，更新 selectedRole 和 selectedChat
-        setSelectedRole(null);
-        setSelectedChat(null);
-        // 同步更新 ChatBoxStore 中的状态
-        setCurrentRole(null);
-        setCurrentChat(null);
-      } else {
-        setClickedRole(role);
-        handleRoleSelect(role);
-        setSelectedRole(role);
-        setSelectedChat(chat);
-        // 同步更新 ChatBoxStore 中的状态
-        setSele
-      }
-    };
-
+  const handleRoleCardClick = (role) => {
+    if (clickedRole === role) {
+      setClickedRole(null);
+      // 取消选择角色时，更新 selectedRole 和 selectedChat
+      setSelectedRoleAndChat(null, null);
+      // 同步更新 ChatBoxStore 中的状态
+      setChatBoxRoleAndChat(null, null);
+    } else {
+      setClickedRole(role);
+      handleRoleSelect(role);
+    }
+  };
 
   // 处理搜索
   const handleSearchChange = (e) => {
@@ -165,11 +160,10 @@ const RoleSelector = () => {
     confirmDelete();
     if (deleteType === 'role' && selectedRole === showDeleteConfirm) {
       // 清除 ChatBoxStore 中的当前角色和聊天
-      setCurrentRole(null);
-      setCurrentChat(null);
+      setChatBoxRoleAndChat(null, null);
     } else if (deleteType === 'chat' && selectedChat === showDeleteConfirm) {
       // 清除 ChatBoxStore 中的当前聊天
-      setCurrentChat(null);
+      setChatBoxRoleAndChat(selectedRole, null);
     }
   };
 

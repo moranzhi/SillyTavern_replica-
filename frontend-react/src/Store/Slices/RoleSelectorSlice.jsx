@@ -63,6 +63,9 @@ const useRoleSelectorStore = create((set, get) => ({
 
   setDeleteType: (type) => set({ deleteType: type }),
 
+  // 同时更新角色和聊天
+  setSelectedRoleAndChat: (role, chat) => set({ selectedRole: role, selectedChat: chat }),
+
   handleRenameRole: (oldName, newName) => {
     const { roleData, selectedRole } = get();
     if (newName && newName !== oldName) {

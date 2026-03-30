@@ -39,6 +39,13 @@ const useChatBoxStore = create(
     // 设置当前聊天
     setCurrentChat: (chat) => set({ currentChat: chat }),
 
+    // 同时设置角色和聊天
+    setChatBoxRoleAndChat: (role, chat) => set({
+      currentRole: role,
+      currentChat: chat
+    }),
+
+
     // 加载聊天历史
     fetchChatHistory: async (roleName, chatName) => {
       set({ isLoading: true, error: null });
@@ -48,10 +55,11 @@ const useChatBoxStore = create(
           throw new Error('Failed to fetch chat history');
         }
         const data = await response.json();
+        // 修改数据处理逻辑，适配API返回的数据结构
         set({
-          messages: data.messages || [],
-          userName: data.userName || 'User',
-          characterName: data.characterName || 'Assistant',
+          messages: data || [], // 直接使用返回的数组
+          userName: 'User', // 固定用户名
+          characterName: roleName || 'Assistant', // 使用角色名作为角色名称
           isLoading: false
         });
       } catch (error) {
@@ -61,6 +69,7 @@ const useChatBoxStore = create(
         });
       }
     },
+
 
     // 清空聊天历史
     clearChatHistory: () => set({
@@ -82,14 +91,21 @@ const useChatBoxStore = create(
 // 监听角色和聊天变化，自动加载聊天历史
 useChatBoxStore.subscribe(
   (state) => ({ role: state.currentRole, chat: state.currentChat }),
-  ({ role, chat }) => {
-    if (role && chat) {
-      useChatBoxStore.getState().fetchChatHistory(role, chat);
-    } else {
-      useChatBoxStore.getState().clearChatHistory();
+  ({ role, chat }, prev) => {
+    // 只有当角色或聊天发生变化时才处理
+    if (role !== prev.role || chat !== prev.chat) {
+      // 确保角色和聊天都存在且不为null
+      if (role && chat) {
+        useChatBoxStore.getState().fetchChatHistory(role, chat);
+      } else {
+        useChatBoxStore.getState().clearChatHistory();
+      }
     }
   },
   { equalityFn: (a, b) => a.role === b.role && a.chat === b.chat }
 );
+
+
+
 
 export default useChatBoxStore;
