@@ -210,39 +210,40 @@ class ChatHistory(BaseModel):
         )
 
     def to_chatbox_format(self) -> List[Dict[str, Any]]:
-        """
-        将聊天历史转换为适合前端chatbox显示的格式
+	    """
+		将聊天历史转换为适合前端chatbox显示的格式
 
-        返回:
-            List[Dict[str, Any]]: 按floor排序的消息字典列表，每个字典包含:
-            {
-                "name": str,
-                "is_user": bool,
-                "floor": int,
-                "mes": str,
-                "swipes": List[str],
-                "swipe_id": int
-            }
-        """
-        # 创建消息字典列表
-        messages_list = []
-        for msg in self.messages:
-            # 获取当前消息内容：优先从swipes数组中获取，如果不存在则使用mes
-            current_mes = msg.mes
-            if msg.swipes and 0 <= msg.swipe_id < len(msg.swipes):
-                current_mes = msg.swipes[msg.swipe_id]
+		返回:
+			List[Dict[str, Any]]: 按floor排序的消息字典列表，每个字典包含:
+			{
+				"name": str,
+				"is_user": bool,
+				"floor": int,
+				"mes": str,
+				"swipes": List[str],
+				"swipe_id": int
+			}
+		"""
+	    # 创建消息字典列表
+	    messages_list = []
+	    for msg in self.messages:
+		    # 获取当前消息内容：优先从swipes数组中获取，如果不存在则使用mes
+		    current_mes = msg.mes
+		    if msg.swipes and 0 <= msg.swipe_id < len(msg.swipes):
+			    current_mes = msg.swipes[msg.swipe_id]
 
-            msg_dict = {
-                "name": msg.name,
-                "is_user": msg.is_user,
-                "floor": msg.floor,
-                "mes": current_mes,
-                "swipes": msg.swipes,
-                "swipe_id": msg.swipe_id
-            }
-            messages_list.append(msg_dict)
+		    msg_dict = {
+			    "name": msg.name,
+			    "is_user": msg.is_user,
+			    "floor": msg.floor,
+			    "mes": current_mes,
+			    "swipes": msg.swipes,
+			    "swipe_id": msg.swipe_id
+		    }
+		    messages_list.append(msg_dict)
 
-        # 按floor排序
-        messages_list.sort(key=lambda x: x["floor"])
+	    # 按floor排序
+	    messages_list.sort(key=lambda x: x["floor"])
 
-        return messages_list
+	    return messages_list
+

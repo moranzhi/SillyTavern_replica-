@@ -100,6 +100,21 @@
   margin-bottom: 10px;
 }
 
+/* 气泡本体 */
+.message .bubble {
+  max-width: 100%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* 新增：确保内容区域可以容纳swipe控件 */
+  display: flex;
+  flex-direction: column;
+}
+
 /* 区分左右布局 */
 .message.user {
   justify-content: flex-end; /* 用户消息靠右 */
@@ -352,7 +367,7 @@
 /* ==================== 输入区域 ==================== */
 
 .chat-input-wrapper {
-  background-color: #fff;
+  background-color: #f9f9f9;
   border-top: 1px solid #ddd;
   padding: 10px 20px;
   height: 62px; /* 明确设置高度 */
@@ -477,4 +492,92 @@
 .bubble code {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9em;
+}
+
+.options-button {
+  height: 42px;
+  width: 42px;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.options-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.send-button {
+  height: 42px;
+  width: 42px; /* 添加固定宽度，使按钮为正方形 */
+  padding: 0;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; /* 添加 flex 布局 */
+  align-items: center; /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
+  flex-shrink: 0;
+  font-size: 18px; /* 设置图标大小 */
+}
+
+.send-button:hover {
+  background-color: #40a9ff;
+}
+
+.send-button.stopping {
+  background-color: #ff4d4f; /* 终止状态下的背景色 */
+}
+
+.send-button.stopping:hover {
+  background-color: #ff7875;
+}
+
+/* Swipe控制按钮样式 */
+.swipe-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.swipe-button {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.swipe-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.swipe-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.swipe-counter {
+  font-size: 12px;
+  color: #888;
+  padding: 0 4px;
 }
