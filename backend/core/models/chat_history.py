@@ -15,6 +15,14 @@ class Message(BaseModel):
         description="消息发送时间戳"
     )
     floor: int = Field(0, description="对话楼层数")
+    swipes: List[str] = Field(
+        default_factory=list,
+        description="历史版本列表。用户消息：存编辑过的不同版本。AI消息：存重roll生成的不同版本"
+    )
+    swipe_id: int = Field(
+        0,
+        description="当前指针。指示当前显示的是 swipes 数组中的第几个（从 0 开始）"
+    )
     mes: str = Field(..., description="消息内容文本")
     extra: Dict[str, Any] = Field(
         default_factory=dict,
@@ -211,17 +219,26 @@ class ChatHistory(BaseModel):
                 "name": str,
                 "is_user": bool,
                 "floor": int,
-                "mes": str
+                "mes": str,
+                "swipes": List[str],
+                "swipe_id": int
             }
         """
         # 创建消息字典列表
         messages_list = []
         for msg in self.messages:
+            # 获取当前消息内容：优先从swipes数组中获取，如果不存在则使用mes
+            current_mes = msg.mes
+            if msg.swipes and 0 <= msg.swipe_id < len(msg.swipes):
+                current_mes = msg.swipes[msg.swipe_id]
+
             msg_dict = {
                 "name": msg.name,
                 "is_user": msg.is_user,
                 "floor": msg.floor,
-                "mes": msg.mes
+                "mes": current_mes,
+                "swipes": msg.swipes,
+                "swipe_id": msg.swipe_id
             }
             messages_list.append(msg_dict)
 

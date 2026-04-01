@@ -1,6 +1,6 @@
 # 使用 Node.js 18 Alpine 镜像作为基础
 # 必须明确指定 node 版本，否则可能默认为空或 python 镜像
-FROM node:18-alpine
+FROM node:20-alpine
 
 # 设置工作目录
 WORKDIR /app
