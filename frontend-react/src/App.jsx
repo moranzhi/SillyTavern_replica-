@@ -14,9 +14,7 @@ function App() {
       {/* 主内容容器 */}
       <div className="main-container">
         {/* 左侧栏 - 预设面板 */}
-        <div className="sidebar-left">
           <SideBarLeft />
-        </div>
 
         {/* 中间栏：聊天框 */}
         <div className="chat-area">
@@ -24,9 +22,7 @@ function App() {
         </div>
 
         {/* 右侧栏 */}
-        <div className="sidebar-right">
           <SideBarRight />
-        </div>
       </div>
     </div>
   );

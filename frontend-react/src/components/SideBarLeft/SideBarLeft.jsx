@@ -1,40 +1,30 @@
 // frontend-react/src/components/SideBarLeft/SideBarLeft.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import './SideBarLeft.css';
+import { useSideBarLeftStore } from '../../Store/indexStore';
+import useSideBarRightStore from '../../Store/Slices/SideBarLeftSlice';
 
 const SideBarLeft = () => {
-  const [activeTab, setActiveTab] = useState('gallery');
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
+  const { activeTab, tabs, setActiveTab } = useSideBarLeftStore();
 
   return (
     <div className="sidebar-left">
       <div className="sidebar-tabs">
-        <button
-          className={`tab-button ${activeTab === 'gallery' ? 'active' : ''}`}
-          onClick={() => handleTabChange('gallery')}
-        >
-          🖼️ 画廊
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'config' ? 'active' : ''}`}
-          onClick={() => handleTabChange('config')}
-        >
-          ⚙️ 配置
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'worldbook' ? 'active' : ''}`}
-          onClick={() => handleTabChange('worldbook')}
-        >
-          🌍 世界书
-        </button>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="sidebar-content">
         {activeTab === 'gallery' && <div className="tab-content">画廊内容</div>}
-        {activeTab === 'config' && <div className="tab-content">配置内容</div>}
+        {activeTab === 'api' && <div className="tab-content">API配置内容</div>}
+        {activeTab === 'presets' && <div className="tab-content">预设配置内容</div>}
         {activeTab === 'worldbook' && <div className="tab-content">世界书内容</div>}
       </div>
     </div>

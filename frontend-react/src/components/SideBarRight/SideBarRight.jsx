@@ -1,65 +1,41 @@
-// frontend-react/src/components/SideBarRight/SideBarRight.jsx
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import './SideBarRight.css';
 import DicePanel from '../DicePanel/DicePanel';
 import ImageDisplay from '../ImageDisplay/ImageDisplay';
+import useSideBarRightStore from '../../Store/Slices/SideBarRightSlice';
 
 const SideBarRight = () => {
-  const [topActiveTab, setTopActiveTab] = useState('dice');
-  const [bottomActiveTab, setBottomActiveTab] = useState('macros');
+  const { selectedTabs, allTabs, handleTabClick, setTabComponent } = useSideBarRightStore();
 
-  const handleTopTabChange = (tab) => {
-    setTopActiveTab(tab);
-  };
-
-  const handleBottomTabChange = (tab) => {
-    setBottomActiveTab(tab);
-  };
+  // 设置标签组件
+  useEffect(() => {
+    setTabComponent('dice', DicePanel);
+    // 可以在这里设置其他标签的组件
+  }, [setTabComponent]);
 
   return (
     <div className="sidebar-right">
-      <div className="right-top">
-        <div className="sidebar-tabs">
+      <div className="sidebar-tabs">
+        {allTabs.map(tab => (
           <button
-            className={`tab-button ${topActiveTab === 'dice' ? 'active' : ''}`}
-            onClick={() => handleTopTabChange('dice')}
+            key={tab.id}
+            className={`tab-button ${selectedTabs.includes(tab.id) ? 'active' : ''}`}
+            onClick={() => handleTabClick(tab.id)}
           >
-            🎲 骰子与工具
+            {tab.label}
           </button>
-          <button
-            className={`tab-button ${topActiveTab === 'debug' ? 'active' : ''}`}
-            onClick={() => handleTopTabChange('debug')}
-          >
-            🔍 上下文调试
-          </button>
-        </div>
-
-        <div className="sidebar-content">
-          {topActiveTab === 'dice' && <DicePanel />}
-          {topActiveTab === 'debug' && <div className="tab-content">上下文调试内容</div>}
-        </div>
+        ))}
       </div>
 
-      <div className="right-bottom">
-        <div className="sidebar-tabs">
-          <button
-            className={`tab-button ${bottomActiveTab === 'macros' ? 'active' : ''}`}
-            onClick={() => handleBottomTabChange('macros')}
-          >
-            🔧 快捷宏
-          </button>
-          <button
-            className={`tab-button ${bottomActiveTab === 'table' ? 'active' : ''}`}
-            onClick={() => handleBottomTabChange('table')}
-          >
-            📊 动态表格
-          </button>
-        </div>
-
-        <div className="sidebar-content">
-          {bottomActiveTab === 'macros' && <div className="tab-content">快捷宏内容</div>}
-          {bottomActiveTab === 'table' && <div className="tab-content">动态表格内容</div>}
-        </div>
+      <div className="sidebar-content">
+        {selectedTabs.map(tabId => {
+          const tab = allTabs.find(t => t.id === tabId);
+          return (
+            <div key={tabId} className={`tab-content ${selectedTabs.length === 1 ? 'full-height' : ''}`}>
+              {tab.component ? <tab.component /> : <div className="tab-content">{tab.label}内容</div>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -145,7 +145,7 @@
   flex-direction: column;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   overflow: hidden;
-  min-height: 140px;
+  height: 200px; /* 设置固定高度 */
   position: relative;
   /* 添加微妙的边框效果 */
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -167,7 +167,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex: 1;
+  flex: 0 0 auto; /* 不再自动伸缩，使用固定高度 */
+  height: 60px; /* 设置固定高度 */
 }
 
 .role-header .role-name {
@@ -177,11 +178,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 80%; /* 限制名称最大宽度 */
 }
+
 
 .role-item.active .role-header .role-name {
   color: #667eea;
+  font-size: 16px; /* 激活状态时字体稍大 */
 }
+
 
 .role-actions {
   display: flex;
@@ -191,7 +196,9 @@
   right: 12px;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 10; /* 确保操作按钮在最上层 */
 }
+
 
 .role-item:hover .role-actions {
   opacity: 1;
@@ -227,12 +234,16 @@
   border-top: 1px solid #f0f0f0;
   padding: 8px 0;
   background-color: #fafbfc;
-  max-height: 140px;
+  height: 120px; /* 设置固定高度 */
   overflow-y: auto;
   /* 自定义滚动条样式 */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
+  flex: 1; /* 让聊天列表占据剩余空间 */
+  display: flex;
+  flex-direction: column;
 }
+
 
 /* Webkit浏览器滚动条样式 */
 .chat-list::-webkit-scrollbar {

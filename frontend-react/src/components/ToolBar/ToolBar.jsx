@@ -65,7 +65,7 @@ const Toolbar = () => {
           <div className="toolbar-icons">
             <div
               className="toolbar-icon"
-              title="当前角色"
+              title="玩家角色"
               onClick={() => handlePanelToggle('currentRole')}
             >
               👤
@@ -82,11 +82,11 @@ const Toolbar = () => {
           <div className="toolbar-icons">
             <div
               className={`toolbar-icon ${activePanel === 'role' ? 'active' : ''}`}
-              title="角色管理"
+              title="ai角色"
               onClick={() => handlePanelToggle('role')}
             >
               🎭
-              <span className="icon-label">全局世界书</span>
+              <span className="icon-label">角色管理</span>
             </div>
             <div className="toolbar-display-box">
               {truncateText(getDisplayText())}
