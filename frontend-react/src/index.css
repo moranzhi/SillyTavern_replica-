@@ -1,12 +1,13 @@
+/* frontend-react/src/index.css */
 html, body {
   margin: 0;
   padding: 0;
-  height: 100vh; /* 使用视口高度作为基准 */
+  height: 100vh;
   width: 100%;
 }
 
 .app {
-  height: 100%; /* 继承body的100vh */
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -28,58 +29,48 @@ html, body {
 html, body, .app {
   height: 100%;
   width: 100%;
-  overflow: hidden; /* 防止出现滚动条 */
+  overflow: hidden;
 }
 
 .app {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* 主内容区域 */
 .main-container {
-  flex: 1; /* 这会让主容器占据剩余的所有空间 */
+  flex: 1;
   display: flex;
-  overflow: hidden; /* 防止内容溢出 */
+  overflow: hidden;
 }
 
 /* 左侧栏 */
 .sidebar-left {
-  width: 250px; /* 或者你想要的宽度 */
-  height:  继承父元素高度; /* 确保高度填满 */
-  overflow-y: auto; /* 内容过多时显示滚动条 */
+  width: 250px;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 中间聊天区域 */
 .chat-area {
-  flex: 1; /* 占据剩余空间 */
-  height: 100%; /* 确保高度填满 */
+  flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 防止内容溢出 */
+  overflow: hidden;
 }
 
 /* 右侧栏 */
 .sidebar-right {
-  width: 300px; /* 或者你想要的宽度 */
-  height: 100%; /* 确保高度填满 */
-  display: flex;
-  flex-direction: column;
-}
-
-/* 右侧栏顶部 */
-.right-top {
-  flex: 1; /* 占据剩余空间 */
-  overflow-y: auto;
-}
-
-/* 右侧栏底部 */
-.right-bottom {
-  height: 200px; /* 或者你想要的高度 */
-  overflow-y: auto;
+  width: 300px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .toolbar {
-  height: 60px; /* 或其他合适的固定高度 */
-  flex-shrink: 0; /* 防止被压缩 */
+  height: 60px;
+  flex-shrink: 0;
 }

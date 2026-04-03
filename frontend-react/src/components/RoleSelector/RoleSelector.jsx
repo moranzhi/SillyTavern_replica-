@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import useRoleSelectorStore from '../../store/Slices/RoleSelectorSlice';
+import useRoleSelectorStore from '../../Store/Slices/RoleSelectorSlice';
 import useChatBoxStore from '../../Store/Slices/ChatBoxSlice';
 
 import './RoleSelector.css';

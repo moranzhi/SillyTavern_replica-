@@ -1,9 +1,9 @@
+// frontend-react/src/App.jsx
 import React from 'react';
 import Toolbar from './components/ToolBar/ToolBar';
 import ChatBox from './components/ChatBox/ChatBox';
-import DicePanel from './components/DicePanel/DicePanel';
-import ImageDisplay from './components/ImageDisplay/ImageDisplay';
-import PresetPanel from './components/PresetPanel/PresetPanel';
+import SideBarLeft from './components/SideBarLeft/SideBarLeft';
+import SideBarRight from './components/SideBarRight/SideBarRight';
 import './index.css';
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
       <div className="main-container">
         {/* 左侧栏 - 预设面板 */}
         <div className="sidebar-left">
-          <PresetPanel />
+          <SideBarLeft />
         </div>
 
         {/* 中间栏：聊天框 */}
@@ -25,12 +25,7 @@ function App() {
 
         {/* 右侧栏 */}
         <div className="sidebar-right">
-          <div className="right-top">
-            <ImageDisplay />  {/* 图片展示放在顶部 */}
-          </div>
-          <div className="right-bottom">
-            <DicePanel />  {/* 骰子面板放在底部 */}
-          </div>
+          <SideBarRight />
         </div>
       </div>
     </div>
