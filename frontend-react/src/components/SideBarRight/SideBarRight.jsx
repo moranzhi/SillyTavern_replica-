@@ -1,16 +1,20 @@
 import React, { useEffect } from 'react';
 import './SideBarRight.css';
-import DicePanel from '../DicePanel/DicePanel';
-import ImageDisplay from '../ImageDisplay/ImageDisplay';
-import useSideBarRightStore from '../../Store/Slices/SideBarRightSlice';
+import Dice from './tab/Dice';
+import Debug from './tab/Debug';
+import Macros from './tab/Macros';
+import Table from './tab/Table';
+import useSideBarRightStore from '../../Store/Slices/RightTabsSlices/SideBarRightSlice';
 
 const SideBarRight = () => {
   const { selectedTabs, allTabs, handleTabClick, setTabComponent } = useSideBarRightStore();
 
   // 设置标签组件
   useEffect(() => {
-    setTabComponent('dice', DicePanel);
-    // 可以在这里设置其他标签的组件
+    setTabComponent('dice', Dice);
+    setTabComponent('debug', Debug);
+    setTabComponent('macros', Macros);
+    setTabComponent('table', Table);
   }, [setTabComponent]);
 
   return (

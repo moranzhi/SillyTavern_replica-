@@ -2,7 +2,7 @@
 import React from 'react';
 import './SideBarLeft.css';
 import { useSideBarLeftStore } from '../../Store/indexStore';
-import useSideBarRightStore from '../../Store/Slices/SideBarLeftSlice';
+import useSideBarRightStore from '../../Store/Slices/LeftTabsSlices/SideBarLeftSlice';
 import Gallery from './tab/Gallery';
 import ApiConfig from './tab/ApiConfig';
 import Presets from './tab/Presets';
