@@ -3,6 +3,10 @@ import React from 'react';
 import './SideBarLeft.css';
 import { useSideBarLeftStore } from '../../Store/indexStore';
 import useSideBarRightStore from '../../Store/Slices/SideBarLeftSlice';
+import Gallery from './tab/Gallery';
+import ApiConfig from './tab/ApiConfig';
+import Presets from './tab/Presets';
+import WorldBook from './tab/WorldBook';
 
 const SideBarLeft = () => {
   const { activeTab, tabs, setActiveTab } = useSideBarLeftStore();
@@ -22,10 +26,10 @@ const SideBarLeft = () => {
       </div>
 
       <div className="sidebar-content">
-        {activeTab === 'gallery' && <div className="tab-content">画廊内容</div>}
-        {activeTab === 'api' && <div className="tab-content">API配置内容</div>}
-        {activeTab === 'presets' && <div className="tab-content">预设配置内容</div>}
-        {activeTab === 'worldbook' && <div className="tab-content">世界书内容</div>}
+        {activeTab === 'gallery' && <Gallery />}
+        {activeTab === 'api' && <ApiConfig />}
+        {activeTab === 'presets' && <Presets />}
+        {activeTab === 'worldbook' && <WorldBook />}
       </div>
     </div>
   );
