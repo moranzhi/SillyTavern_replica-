@@ -8,22 +8,40 @@ const PresetPanel = () => {
     parameters,
     presets,
     isLoadingPresets,
+    promptComponents,
     setSelectedPreset,
     updateParameter,
     saveCurrentAsPreset,
     editPresetName: updatePresetName,
     isParametersExpanded,
     toggleParametersExpanded,
-    fetchPresets
+    fetchPresets,
+    setPromptComponents,
+    toggleComponentEnabled,
+    updateComponent,
+    addComponent,
+    removeComponent,
+    moveComponent
   } = usePresetStore();
+
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showComponentEditDialog, setShowComponentEditDialog] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [editPresetId, setEditPresetId] = useState('');
   const [editPresetName, setEditPresetName] = useState('');
   const [importPresetData, setImportPresetData] = useState('');
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
+
+  // 组件编辑状态
+  const [editingComponentIndex, setEditingComponentIndex] = useState(-1);
+  const [editComponentContent, setEditComponentContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false); // 添加编辑状态标志
+
+  // 拖拽状态
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverItem, setDragOverItem] = useState(null);
 
   // 参数描述映射
   const parameterDescriptions = {
@@ -99,10 +117,16 @@ const PresetPanel = () => {
       const importedPreset = JSON.parse(importPresetData);
       if (importedPreset.name && importedPreset.parameters) {
         saveCurrentAsPreset({ name: importedPreset.name });
-        // 这里需要更新参数
+        // 更新参数
         Object.keys(importedPreset.parameters).forEach(key => {
           updateParameter({ name: key, value: importedPreset.parameters[key] });
         });
+
+        // 更新组件列表
+        if (importedPreset.promptComponents) {
+          setPromptComponents(importedPreset.promptComponents);
+        }
+
         setImportPresetData('');
         setShowImportDialog(false);
       }
@@ -116,7 +140,12 @@ const PresetPanel = () => {
     if (selectedPreset) {
       const preset = presets.find(p => p.id === selectedPreset);
       if (preset) {
-        const dataStr = JSON.stringify(preset, null, 2);
+        const exportData = {
+          ...preset,
+          parameters,
+          promptComponents
+        };
+        const dataStr = JSON.stringify(exportData, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(dataBlob);
         const link = document.createElement('a');
@@ -126,6 +155,111 @@ const PresetPanel = () => {
         URL.revokeObjectURL(url);
       }
     }
+  };
+
+  // 添加新组件
+  const handleAddNewComponent = () => {
+    const newComponent = {
+      identifier: `component_${Date.now()}`,
+      name: '新组件',
+      content: '',
+      role: 0,
+      system_prompt: false,
+      marker: false,
+      enabled: true
+    };
+    addComponent(newComponent);
+  };
+
+  // 开始编辑组件
+  const handleStartEditComponent = (index) => {
+    setEditingComponentIndex(index);
+    setEditComponentContent(promptComponents[index].content);
+    setIsEditing(true); // 设置为编辑模式
+    setShowComponentEditDialog(true);
+  };
+
+  // 查看组件内容
+  const handleViewComponent = (index) => {
+    setEditingComponentIndex(index);
+    setEditComponentContent(promptComponents[index].content);
+    setIsEditing(false); // 设置为查看模式
+    setShowComponentEditDialog(true);
+  };
+
+  // 保存组件编辑
+  const handleSaveComponentEdit = () => {
+    if (editingComponentIndex >= 0 && isEditing) { // 只在编辑模式下保存
+      updateComponent(editingComponentIndex, { content: editComponentContent });
+    }
+    setEditingComponentIndex(-1);
+    setEditComponentContent('');
+    setShowComponentEditDialog(false);
+  };
+
+  // 取消组件编辑
+  const handleCancelComponentEdit = () => {
+    setEditingComponentIndex(-1);
+    setEditComponentContent('');
+    setShowComponentEditDialog(false);
+  };
+
+  // 关闭组件查看对话框
+  const handleCloseComponentView = () => {
+    setEditingComponentIndex(-1);
+    setEditComponentContent('');
+    setShowComponentEditDialog(false);
+  };
+
+  // 切换组件启用状态
+  const handleToggleComponentEnabled = (index) => {
+    toggleComponentEnabled(index);
+  };
+
+  // 删除组件
+  const handleDeleteComponent = (index) => {
+    if (window.confirm('确定要删除这个组件吗？')) {
+      removeComponent(index);
+    }
+  };
+
+  // 拖拽开始
+  const handleDragStart = (e, index) => {
+    setDraggedItem(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+    // 添加拖拽时的样式
+    setTimeout(() => {
+      e.target.classList.add('dragging');
+    }, 0);
+  };
+
+  // 拖拽结束
+  const handleDragEnd = (e) => {
+    setDraggedItem(null);
+    setDragOverItem(null);
+    e.target.classList.remove('dragging');
+  };
+
+  // 拖拽经过
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedItem === null || draggedItem === index) return;
+    setDragOverItem(index);
+  };
+
+  // 放置
+  const handleDrop = (e, index) => {
+    e.preventDefault();
+    if (draggedItem === null || draggedItem === index) return;
+
+    // 移动组件
+    moveComponent(draggedItem, index);
+
+    // 重置拖拽状态
+    setDraggedItem(null);
+    setDragOverItem(null);
   };
 
   return (
@@ -254,6 +388,36 @@ const PresetPanel = () => {
           <div className="dialog-buttons">
             <button onClick={handleImportPreset}>导入</button>
             <button onClick={() => setShowImportDialog(false)}>取消</button>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑/查看组件内容对话框 */}
+      {showComponentEditDialog && (
+        <div className="component-edit-dialog">
+          <div className="dialog-header">
+            <h3>{isEditing ? '编辑' : '查看'}组件: {editingComponentIndex >= 0 && promptComponents[editingComponentIndex].name}</h3>
+            <button className="close-btn" onClick={handleCloseComponentView}>×</button>
+          </div>
+          <div className="dialog-content">
+            <textarea
+              value={editComponentContent}
+              onChange={(e) => setEditComponentContent(e.target.value)}
+              className="component-textarea"
+              readOnly={!isEditing} // 根据模式设置是否只读
+              rows={20}
+            />
+          </div>
+          <div className="dialog-footer">
+            <span className="token-count">
+              字符数: {editComponentContent ? editComponentContent.length : 0}
+            </span>
+            {isEditing && (
+              <div className="dialog-buttons">
+                <button onClick={handleSaveComponentEdit}>保存</button>
+                <button onClick={handleCancelComponentEdit}>取消</button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -515,6 +679,98 @@ const PresetPanel = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* 预设组件列表 */}
+      <div className="preset-components-section">
+        <div className="components-header">
+          <h3>预设组件</h3>
+          <button
+            onClick={handleAddNewComponent}
+            className="add-component-btn"
+            onMouseEnter={(e) => showTooltip(e, "添加新组件")}
+            onMouseLeave={hideTooltip}
+          >
+            + 添加组件
+          </button>
+        </div>
+
+        <div className="components-list draggable-container">
+          {promptComponents.map((component, index) => (
+            <React.Fragment key={component.identifier}>
+              {/* 拖拽指示器 - 在组件上方 */}
+              <div
+                className={`drag-indicator ${dragOverItem === index ? 'visible' : ''}`}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+              />
+
+              {/* 组件项 */}
+              <div
+                className={`prompt-component-item ${!component.enabled ? 'disabled' : ''} ${component.marker ? 'marker' : ''} ${draggedItem === index ? 'dragging' : ''}`}
+                draggable={!component.marker}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <div className="component-header">
+                  <div className="component-controls">
+                    <div className="drag-handle">⋮⋮</div>
+                    <button
+                      className={`toggle-btn ${component.enabled ? 'enabled' : 'disabled'}`}
+                      onClick={() => handleToggleComponentEnabled(index)}
+                      onMouseEnter={(e) => showTooltip(e, component.enabled ? "禁用组件" : "启用组件")}
+                      onMouseLeave={hideTooltip}
+                    >
+                      {component.enabled ? '✓' : '○'}
+                    </button>
+                    <span className="component-name">{component.name}</span>
+                    {component.marker && (
+                      <span className="component-marker-badge">固定</span>
+                    )}
+                  </div>
+                  <div className="component-actions">
+                    <button
+                      className="edit-btn"
+                      onClick={() => handleStartEditComponent(index)}
+                      onMouseEnter={(e) => showTooltip(e, "编辑/查看组件")}
+                      onMouseLeave={hideTooltip}
+                    >
+                      编辑
+                    </button>
+                    {!component.marker && (
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteComponent(index)}
+                        onMouseEnter={(e) => showTooltip(e, "删除组件")}
+                        onMouseLeave={hideTooltip}
+                      >
+                        删除
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="component-footer">
+                  <span className="token-count">
+                    字符数: {component.content ? component.content.length : 0}
+                  </span>
+                </div>
+              </div>
+            </React.Fragment>
+          ))}
+
+          {/* 最后一个拖拽指示器 - 在列表末尾 */}
+          <div
+            className={`drag-indicator ${dragOverItem === promptComponents.length ? 'visible' : ''}`}
+            onDragOver={(e) => handleDragOver(e, promptComponents.length)}
+            onDrop={(e) => handleDrop(e, promptComponents.length)}
+          />
+        </div>
+
       </div>
     </div>
   );
