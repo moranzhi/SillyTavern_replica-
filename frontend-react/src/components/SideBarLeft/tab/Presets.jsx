@@ -741,6 +741,9 @@ const PresetPanel = () => {
                     >
                       编辑
                     </button>
+                    <span className="token-count">
+                      {component.content ? component.content.length : 0}字
+                    </span>
                     {!component.marker && (
                       <button
                         className="delete-btn"
@@ -752,12 +755,6 @@ const PresetPanel = () => {
                       </button>
                     )}
                   </div>
-                </div>
-
-                <div className="component-footer">
-                  <span className="token-count">
-                    字符数: {component.content ? component.content.length : 0}
-                  </span>
                 </div>
               </div>
             </React.Fragment>

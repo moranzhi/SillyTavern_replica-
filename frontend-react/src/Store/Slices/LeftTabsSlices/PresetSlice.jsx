@@ -29,7 +29,72 @@ const usePresetStore = create((set, get) => ({
   isParametersExpanded: true,
 
   // 预设组件列表
-  promptComponents: [],
+  promptComponents: [
+    {
+      identifier: "dialogueExamples",
+      name: "Chat Examples",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "chatHistory",
+      name: "Chat History",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "worldInfoAfter",
+      name: "World Info (after)",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "worldInfoBefore",
+      name: "World Info (before)",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "charDescription",
+      name: "Char Description",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "charPersonality",
+      name: "Char Personality",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "scenario",
+      name: "Scenario",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    },
+    {
+      identifier: "personaDescription",
+      name: "Persona Description",
+      system_prompt: true,
+      marker: true,
+      enabled: true,
+      role: 0
+    }
+  ],
 
   // 从后端加载预设列表
   fetchPresets: async () => {
@@ -52,8 +117,6 @@ const usePresetStore = create((set, get) => ({
     }
   },
 
-  // 设置选中的预设
-  // 设置选中的预设
   // 设置选中的预设
   setSelectedPreset: async (presetId) => {
     try {
