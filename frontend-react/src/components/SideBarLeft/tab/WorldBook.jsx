@@ -12,11 +12,9 @@ const WorldBook = () => {
     isSelecting,
     error,
     showWorldBookDropdown,
-    showAddWorldBookDropdown,
     globalWorldBooks,
     fetchWorldBooks,
     toggleWorldBookDropdown,
-    toggleAddWorldBookDropdown,
     addGlobalWorldBook,
     removeGlobalWorldBook,
     createWorldBook,
@@ -28,6 +26,7 @@ const WorldBook = () => {
     toggleEditPanel,
   } = useWorldBookStore();
 
+
   const [newEntry, setNewEntry] = useState({
     name: '',
     content: '',
@@ -37,9 +36,11 @@ const WorldBook = () => {
     order: 0,
   });
 
-  useEffect(() => {
-    fetchWorldBooks();
-  }, [fetchWorldBooks]);
+        useEffect(() => {
+          fetchWorldBooks();
+        }, [fetchWorldBooks]);
+
+
 
   const handleCreateWorldBook = async () => {
     const name = prompt('请输入世界书名称:');
@@ -71,62 +72,75 @@ const WorldBook = () => {
     await updateEntry(editingEntry.uid, updatedEntry);
   };
 
+  const isGlobalBook = (bookUid) => {
+    return globalWorldBooks.some(gb => gb.uid === bookUid);
+  };
+
+  const handleToggleGlobalBook = (bookUid) => {
+    if (isGlobalBook(bookUid)) {
+      removeGlobalWorldBook(bookUid);
+    } else {
+      addGlobalWorldBook(bookUid);
+    }
+  };
+
+  const sortedWorldBooks = [...worldBooks].sort((a, b) => {
+    const aIsGlobal = isGlobalBook(a.uid);
+    const bIsGlobal = isGlobalBook(b.uid);
+    if (aIsGlobal && !bIsGlobal) return -1;
+    if (!aIsGlobal && bIsGlobal) return 1;
+    return 0;
+  });
+
   return (
     <div className="worldbook-content">
-      {/* 全局世界书槽位 */}
-      <div className="global-worldbooks-slot">
-        <div className="global-books-header">
-          <span>全局世界书</span>
-          <div className="dropdown">
-            <button className="add-global-book-btn" onClick={toggleAddWorldBookDropdown}>
-              + 添加
-            </button>
-            {showAddWorldBookDropdown && (
-              <div className="dropdown-menu">
-                <div className="dropdown-item" onClick={handleCreateWorldBook}>
-                  新建世界书
-                </div>
-                {worldBooks
-                  .filter(book => !globalWorldBooks.find(gb => gb.uid === book.uid))
-                  .map(book => (
-                    <div
-                      key={book.uid}
-                      className="dropdown-item"
-                      onClick={() => {
-                        addGlobalWorldBook(book.uid);
-                        toggleAddWorldBookDropdown(false);
-                      }}
-                    >
-                      {book.name}
+            {/* 全局世界书区域 */}
+            <div className="global-worldbooks-section">
+              <div className="global-worldbooks-slot">
+                <div className="global-books-header">
+                  <span className="title-text">全局世界书</span>
+                  {globalWorldBooks.length > 0 && (
+                    <div className="active-books-list">
+                      {globalWorldBooks.map(book => (
+                        <span
+                          key={book.uid}
+                          className="active-book-item"
+                          onClick={() => selectWorldBook(book.uid)}
+                        >
+                          {book.name}
+                          <span
+                            className="remove-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeGlobalWorldBook(book.uid);
+                            }}
+                          >
+                            ✕
+                          </span>
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-        <div className="global-books-list">
-          {globalWorldBooks.map(book => (
-            <div
-              key={book.uid}
-              className={`global-book-tag ${selectedWorldBook?.uid === book.uid ? 'active' : ''}`}
-              onClick={() => selectWorldBook(book.uid)}
-            >
-              {book.name}
-              {selectedWorldBook?.uid === book.uid && (
-                <span
-                  className="remove-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeGlobalWorldBook(book.uid);
-                  }}
-                >
-                  ✕
-                </span>
-              )}
+
+              {/* 操作按钮组 */}
+              <div className="worldbook-actions">
+                <button className="action-btn" onClick={handleCreateWorldBook}>
+                  + 新建
+                </button>
+                <button className="action-btn">
+                  📋 复制
+                </button>
+                <button className="action-btn">
+                  📥 导入
+                </button>
+                <button className="action-btn">
+                  📤 导出
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+
 
       {/* 世界书选择区域 */}
       <div className="worldbook-selector">

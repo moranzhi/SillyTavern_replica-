@@ -5,93 +5,104 @@
   padding: 12px;
   gap: 12px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
 }
 
-/* 全局世界书槽位 */
-.global-worldbooks-slot {
+/* 全局世界书区域 */
+.global-worldbooks-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.4);
+}
+
+.global-worldbooks-slot {
+  background: white;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
 }
 
 .global-books-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 4px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+.title-text {
+  font-size: 11px;
+  color: #777;
   font-weight: 500;
 }
 
-.global-books-list {
+.active-books-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  min-height: 28px;
+  gap: 4px;
 }
 
-.global-book-tag {
+.active-book-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(100, 149, 237, 0.25);
-  border: 1px solid rgba(100, 149, 237, 0.5);
-  border-radius: 4px;
+  gap: 4px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 1);
+  color: #4a6cf7;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: rgba(74, 108, 247, 0.1);
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-weight: 500;
 }
 
-.global-book-tag:hover {
-  background: rgba(100, 149, 237, 0.4);
-  border-color: rgba(100, 149, 237, 0.7);
+.active-book-item:hover {
+  background: rgba(74, 108, 247, 0.2);
 }
 
-.global-book-tag.active {
-  background: rgba(100, 149, 237, 0.5);
-  border-color: rgba(100, 149, 237, 0.8);
-  box-shadow: 0 0 8px rgba(100, 149, 237, 0.3);
-}
-
-.global-book-tag .remove-btn {
-  opacity: 0.9;
+.active-book-item .remove-btn {
+  opacity: 0.7;
   cursor: pointer;
   transition: opacity 0.15s ease;
-  font-weight: bold;
 }
 
-.global-book-tag .remove-btn:hover {
+.active-book-item .remove-btn:hover {
   opacity: 1;
-  color: rgba(255, 107, 107, 1);
+  color: #e74c3c;
 }
 
-.add-global-book-btn {
-  padding: 4px 8px;
-  background: rgba(100, 149, 237, 0.3);
-  border: 1px solid rgba(100, 149, 237, 0.5);
+/* 操作按钮组 */
+.worldbook-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 5px 10px;
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  color: rgba(255, 255, 255, 1);
+  color: #555;
   cursor: pointer;
   font-size: 12px;
   transition: all 0.15s ease;
   font-weight: 500;
+  flex: 1;
+  min-width: 60px;
 }
 
-.add-global-book-btn:hover {
-  background: rgba(100, 149, 237, 0.5);
-  border-color: rgba(100, 149, 237, 0.8);
+.action-btn:hover {
+  background: #f5f5f5;
+  border-color: #4a6cf7;
+  color: #4a6cf7;
 }
 
-/* 下拉菜单 */
+/* 世界书选择区域 */
+.worldbook-selector {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .dropdown {
   position: relative;
 }
@@ -99,10 +110,10 @@
 .dropdown-btn {
   width: 100%;
   padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #333;
   cursor: pointer;
   text-align: left;
   display: flex;
@@ -114,8 +125,8 @@
 }
 
 .dropdown-btn:hover {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #f5f5f5;
+  border-color: #4a6cf7;
 }
 
 .dropdown-menu {
@@ -123,14 +134,14 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(10, 10, 10, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   margin-top: 4px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-item {
@@ -138,24 +149,17 @@
   cursor: pointer;
   transition: background 0.15s ease;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #333;
   font-weight: 500;
 }
 
 .dropdown-item:hover {
-  background: rgba(100, 149, 237, 0.3);
+  background: #f5f5f5;
 }
 
 .dropdown-item.active {
-  background: rgba(100, 149, 237, 0.4);
-  color: rgba(255, 255, 255, 1);
-}
-
-/* 世界书选择区域 */
-.worldbook-selector {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  background: rgba(74, 108, 247, 0.1);
+  color: #4a6cf7;
 }
 
 /* 条目列表区域 */
@@ -169,48 +173,55 @@
 
 .entry-item {
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .entry-item:hover {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: #f9f9f9;
+  border-color: #4a6cf7;
 }
 
 .entry-item.active {
-  background: rgba(100, 149, 237, 0.2);
-  border-color: rgba(100, 149, 237, 0.5);
+  background: rgba(74, 108, 247, 0.1);
+  border-color: #4a6cf7;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
 .entry-name {
   font-weight: 600;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #333;
 }
 
 .entry-status {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #777;
   padding: 2px 6px;
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.3);
+  background: #f5f5f5;
   font-weight: 500;
 }
 
 .entry-status.enabled {
-  color: rgba(100, 255, 149, 1);
-  background: rgba(100, 255, 149, 0.2);
+  color: #4a90e2;
+  background: rgba(74, 144, 226, 0.1);
 }
 
 .entry-meta {
   display: flex;
   gap: 12px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #777;
   font-weight: 500;
 }
 
@@ -221,13 +232,14 @@
   right: 0;
   bottom: 0;
   left: 300px;
-  background: rgba(20, 20, 20, 0.98);
+  background: white;
   z-index: 1000;
   padding: 16px;
   overflow-y: auto;
   transform: translateX(100%);
   transition: transform 0.2s ease-out;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid #e0e0e0;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .edit-panel.open {
@@ -240,19 +252,20 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .edit-panel-header h2 {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #333;
   margin: 0;
+  font-weight: 600;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: #999;
   font-size: 20px;
   cursor: pointer;
   padding: 4px;
@@ -260,7 +273,7 @@
 }
 
 .close-btn:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: #333;
 }
 
 .form-group {
@@ -271,7 +284,8 @@
   display: block;
   margin-bottom: 6px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #555;
+  font-weight: 500;
 }
 
 .form-input,
@@ -279,10 +293,10 @@
 .form-select {
   width: 100%;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #333;
   font-size: 13px;
   transition: all 0.15s ease;
 }
@@ -291,8 +305,8 @@
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(100, 149, 237, 0.5);
+  border-color: #4a6cf7;
+  box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.1);
 }
 
 .form-textarea {
@@ -306,7 +320,8 @@
   gap: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #555;
+  font-weight: 500;
 }
 
 .form-checkbox input {
@@ -321,30 +336,25 @@
   cursor: pointer;
   font-size: 13px;
   transition: all 0.15s ease;
+  font-weight: 500;
 }
 
 .btn-primary {
-  background: rgba(100, 149, 237, 0.3);
-  border: 1px solid rgba(100, 149, 237, 0.5);
-  color: rgba(255, 255, 255, 1);
-  font-weight: 500;
+  background: #4a6cf7;
+  color: white;
 }
 
 .btn-primary:hover {
-  background: rgba(100, 149, 237, 0.5);
-  border-color: rgba(100, 149, 237, 0.8);
+  background: #3a5ce5;
 }
 
 .btn-danger {
-  background: rgba(255, 107, 107, 0.3);
-  border: 1px solid rgba(255, 107, 107, 0.5);
-  color: rgba(255, 255, 255, 1);
-  font-weight: 500;
+  background: #e74c3c;
+  color: white;
 }
 
 .btn-danger:hover {
-  background: rgba(255, 107, 107, 0.5);
-  border-color: rgba(255, 107, 107, 0.8);
+  background: #c0392b;
 }
 
 /* 加载和错误状态 */
@@ -356,52 +366,13 @@
 }
 
 .loading {
-  color: rgba(255, 255, 255, 0.8);
+  color: #777;
   font-weight: 500;
 }
 
 .error {
-  color: rgba(255, 107, 107, 1);
-  background: rgba(255, 107, 107, 0.2);
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
   border-radius: 4px;
-  font-weight: 500;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 500;
-}
-
-.form-input,
-.form-textarea,
-.form-select {
-  width: 100%;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 13px;
-  transition: all 0.15s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
-  outline: none;
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(100, 149, 237, 0.6);
-}
-
-.form-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
   font-weight: 500;
 }

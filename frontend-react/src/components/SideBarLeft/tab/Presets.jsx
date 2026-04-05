@@ -37,7 +37,7 @@ const PresetPanel = () => {
   // 组件编辑状态
   const [editingComponentIndex, setEditingComponentIndex] = useState(-1);
   const [editComponentContent, setEditComponentContent] = useState('');
-  const [isEditing, setIsEditing] = useState(false); // 添加编辑状态标志
+  const [isEditing, setIsEditing] = useState(false);
 
   // 拖拽状态
   const [draggedItem, setDraggedItem] = useState(null);
@@ -75,7 +75,6 @@ const PresetPanel = () => {
 
   // 处理参数更新
   const handleParameterChange = (name, value) => {
-    // 根据参数类型转换值
     let convertedValue = value;
     if (name === 'temperature' || name === 'frequency_penalty' || name === 'presence_penalty' || name === 'top_p') {
       convertedValue = parseFloat(value);
@@ -93,30 +92,44 @@ const PresetPanel = () => {
   }, [fetchPresets]);
 
   // 保存当前设置为预设
-  const handleSavePreset = () => {
+  const handleSavePreset = async () => {
     if (newPresetName.trim()) {
-      saveCurrentAsPreset({ name: newPresetName });
-      setNewPresetName('');
-      setShowSaveDialog(false);
+      try {
+        await saveCurrentAsPreset({ name: newPresetName });
+        setNewPresetName('');
+        setShowSaveDialog(false);
+        // 重新加载预设列表
+        fetchPresets();
+      } catch (error) {
+        console.error('保存预设失败:', error);
+        alert('保存预设失败: ' + error.message);
+      }
     }
   };
 
   // 编辑预设名称
-  const handleEditPreset = () => {
+  const handleEditPreset = async () => {
     if (editPresetId && editPresetName.trim()) {
-      updatePresetName(editPresetId, editPresetName);
-      setEditPresetId('');
-      setEditPresetName('');
-      setShowEditDialog(false);
+      try {
+        await updatePresetName(editPresetId, editPresetName);
+        setEditPresetId('');
+        setEditPresetName('');
+        setShowEditDialog(false);
+        // 重新加载预设列表
+        fetchPresets();
+      } catch (error) {
+        console.error('编辑预设名称失败:', error);
+        alert('编辑预设名称失败: ' + error.message);
+      }
     }
   };
 
   // 导入预设
-  const handleImportPreset = () => {
+  const handleImportPreset = async () => {
     try {
       const importedPreset = JSON.parse(importPresetData);
       if (importedPreset.name && importedPreset.parameters) {
-        saveCurrentAsPreset({ name: importedPreset.name });
+        await saveCurrentAsPreset({ name: importedPreset.name });
         // 更新参数
         Object.keys(importedPreset.parameters).forEach(key => {
           updateParameter({ name: key, value: importedPreset.parameters[key] });
@@ -129,9 +142,12 @@ const PresetPanel = () => {
 
         setImportPresetData('');
         setShowImportDialog(false);
+        // 重新加载预设列表
+        fetchPresets();
       }
     } catch (error) {
       console.error('导入预设失败:', error);
+      alert('导入预设失败: ' + error.message);
     }
   };
 
@@ -175,7 +191,7 @@ const PresetPanel = () => {
   const handleStartEditComponent = (index) => {
     setEditingComponentIndex(index);
     setEditComponentContent(promptComponents[index].content);
-    setIsEditing(true); // 设置为编辑模式
+    setIsEditing(true);
     setShowComponentEditDialog(true);
   };
 
@@ -183,13 +199,13 @@ const PresetPanel = () => {
   const handleViewComponent = (index) => {
     setEditingComponentIndex(index);
     setEditComponentContent(promptComponents[index].content);
-    setIsEditing(false); // 设置为查看模式
+    setIsEditing(false);
     setShowComponentEditDialog(true);
   };
 
   // 保存组件编辑
   const handleSaveComponentEdit = () => {
-    if (editingComponentIndex >= 0 && isEditing) { // 只在编辑模式下保存
+    if (editingComponentIndex >= 0 && isEditing) {
       updateComponent(editingComponentIndex, { content: editComponentContent });
     }
     setEditingComponentIndex(-1);
@@ -228,7 +244,6 @@ const PresetPanel = () => {
     setDraggedItem(index);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', index.toString());
-    // 添加拖拽时的样式
     setTimeout(() => {
       e.target.classList.add('dragging');
     }, 0);
@@ -254,10 +269,8 @@ const PresetPanel = () => {
     e.preventDefault();
     if (draggedItem === null || draggedItem === index) return;
 
-    // 移动组件
     moveComponent(draggedItem, index);
 
-    // 重置拖拽状态
     setDraggedItem(null);
     setDragOverItem(null);
   };
@@ -404,13 +417,13 @@ const PresetPanel = () => {
               value={editComponentContent}
               onChange={(e) => setEditComponentContent(e.target.value)}
               className="component-textarea"
-              readOnly={!isEditing} // 根据模式设置是否只读
+              readOnly={!isEditing}
               rows={20}
             />
           </div>
           <div className="dialog-footer">
             <span className="token-count">
-              字符数: {editComponentContent ? editComponentContent.length : 0}
+              {editComponentContent ? editComponentContent.length : 0}
             </span>
             {isEditing && (
               <div className="dialog-buttons">
@@ -581,7 +594,6 @@ const PresetPanel = () => {
                 type="number"
                 min="1"
                 max="10000000"
-                defaultValue="1000000"
                 value={parameters.max_context}
                 onChange={(e) => handleParameterChange('max_context', e.target.value)}
                 className="parameter-input"
@@ -601,7 +613,6 @@ const PresetPanel = () => {
                 type="number"
                 min="1"
                 max="100000"
-                defaultValue="30000"
                 value={parameters.max_tokens}
                 onChange={(e) => handleParameterChange('max_tokens', e.target.value)}
                 className="parameter-input"
@@ -729,7 +740,7 @@ const PresetPanel = () => {
                     </button>
                     <span className="component-name">{component.name}</span>
                     {component.marker && (
-                      <span className="component-marker-badge">固定</span>
+                      <span className="component-marker-badge">🔒</span>
                     )}
                   </div>
                   <div className="component-actions">
@@ -739,10 +750,10 @@ const PresetPanel = () => {
                       onMouseEnter={(e) => showTooltip(e, "编辑/查看组件")}
                       onMouseLeave={hideTooltip}
                     >
-                      编辑
+                      ✏️
                     </button>
                     <span className="token-count">
-                      {component.content ? component.content.length : 0}字
+                      {component.content ? component.content.length : 0}
                     </span>
                     {!component.marker && (
                       <button
@@ -751,7 +762,7 @@ const PresetPanel = () => {
                         onMouseEnter={(e) => showTooltip(e, "删除组件")}
                         onMouseLeave={hideTooltip}
                       >
-                        删除
+                        🗑️
                       </button>
                     )}
                   </div>

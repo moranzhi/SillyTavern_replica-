@@ -16,7 +16,7 @@ class PromptComponent(BaseModel):
 	@validator('role')
 	def validate_role(cls, v):
 		"""验证角色值是否在有效范围内"""
-		if v not in [0, 1, 2]:
+		if not isinstance(v, int) or v not in [0, 1, 2]:
 			raise ValueError("角色值必须是0(System)、1(User)或2(Assistant)")
 		return v
 
@@ -49,7 +49,7 @@ class PromptComponent(BaseModel):
 	@classmethod
 	def from_dict(cls, data: Dict[str, Any]) -> 'PromptComponent':
 		"""
-		从字典创建组件实例
+		从字典创建组件实例，自动处理role字段的类型转换
 
 		参数:
 			data: 包含组件数据的字典
@@ -57,4 +57,9 @@ class PromptComponent(BaseModel):
 		返回:
 			PromptComponent: 组件实例
 		"""
+		# 处理role字段，将字符串转换为整数
+		if 'role' in data and isinstance(data['role'], str):
+			role_map = {'system': 0, 'user': 1, 'assistant': 2}
+			data['role'] = role_map.get(data['role'].lower(), 0)
+
 		return cls(**data)

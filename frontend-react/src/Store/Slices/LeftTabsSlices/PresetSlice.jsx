@@ -100,14 +100,16 @@ const usePresetStore = create((set, get) => ({
   fetchPresets: async () => {
     set({ isLoadingPresets: true });
     try {
-      const response = await fetch('/api/presets/list');
+      const response = await fetch('/api/presets');
       const data = await response.json();
 
       // 转换为预设对象数组
-      const presetList = data.presets.map(name => ({
-        id: name,
-        name,
-        parameters: {} // 参数将在选择预设时加载
+      const presetList = data.presets.map(preset => ({
+        id: preset.name,
+        name: preset.name,
+        description: preset.description,
+        component_count: preset.component_count,
+        temperature: preset.temperature
       }));
 
       set({ presets: presetList, isLoadingPresets: false });
@@ -150,14 +152,19 @@ const usePresetStore = create((set, get) => ({
       // 处理预设组件
       let components = [];
       if (presetData.prompts && Array.isArray(presetData.prompts)) {
-        // 获取当前角色的prompt_order
-        const currentOrder = presetData.prompt_order && presetData.prompt_order.length > 0
+        // 获取当前角色的prompt_order，添加更严格的检查
+        const currentOrder = (presetData.prompt_order &&
+                             Array.isArray(presetData.prompt_order) &&
+                             presetData.prompt_order.length > 0 &&
+                             presetData.prompt_order[0] &&
+                             presetData.prompt_order[0].order &&
+                             Array.isArray(presetData.prompt_order[0].order))
           ? presetData.prompt_order[0].order
           : [];
 
         // 根据prompt_order排序组件
         components = presetData.prompts.map(prompt => {
-          const orderItem = currentOrder.find(item => item.identifier === prompt.identifier);
+          const orderItem = currentOrder.find(item => item && item.identifier === prompt.identifier);
           return {
             ...prompt,
             enabled: orderItem ? orderItem.enabled : true,
@@ -168,12 +175,13 @@ const usePresetStore = create((set, get) => ({
         // 如果有prompt_order，按照它排序
         if (currentOrder.length > 0) {
           components.sort((a, b) => {
-            const indexA = currentOrder.findIndex(item => item.identifier === a.identifier);
-            const indexB = currentOrder.findIndex(item => item.identifier === b.identifier);
+            const indexA = currentOrder.findIndex(item => item && item.identifier === a.identifier);
+            const indexB = currentOrder.findIndex(item => item && item.identifier === b.identifier);
             return indexA - indexB;
           });
         }
       }
+
 
       // 更新状态，确保参数容器展开
       set({
@@ -187,8 +195,6 @@ const usePresetStore = create((set, get) => ({
     }
   },
 
-
-
   // 更新参数
   updateParameter: ({ name, value }) => set((state) => ({
     parameters: { ...state.parameters, [name]: value }
@@ -200,25 +206,97 @@ const usePresetStore = create((set, get) => ({
   })),
 
   // 保存当前设置为预设
-  saveCurrentAsPreset: ({ name }) => set((state) => {
-    const newPreset = {
-      id: `preset_${Date.now()}`,
-      name,
-      parameters: { ...state.parameters },
-      promptComponents: [...state.promptComponents]
-    };
-    return {
-      presets: [...state.presets, newPreset],
-      selectedPreset: newPreset.id
-    };
-  }),
+  saveCurrentAsPreset: async ({ name }) => {
+    const state = get();
+    try {
+      // 构建预设数据
+      const presetData = {
+        ...state.parameters,
+        prompts: state.promptComponents.map(component => ({
+          identifier: component.identifier,
+          name: component.name,
+          content: component.content || '',
+          role: component.role,
+          system_prompt: component.system_prompt,
+          marker: component.marker
+        })),
+        prompt_order: [{
+          order: state.promptComponents.map(component => ({
+            identifier: component.identifier,
+            enabled: component.enabled !== false
+          }))
+        }]
+      };
+
+      // 发送到后端
+      const response = await fetch('/api/presets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preset_name: name,
+          ...presetData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save preset');
+      }
+
+      const result = await response.json();
+
+      // 添加到本地预设列表
+      const newPreset = {
+        id: name,
+        name,
+        description: '',
+        component_count: state.promptComponents.length,
+        temperature: state.parameters.temperature
+      };
+
+      set((state) => ({
+        presets: [...state.presets, newPreset],
+        selectedPreset: name
+      }));
+
+      return result;
+    } catch (error) {
+      console.error('Failed to save preset:', error);
+      throw error;
+    }
+  },
 
   // 编辑预设名称
-  editPresetName: (presetId, newName) => set((state) => ({
-    presets: state.presets.map(preset =>
-      preset.id === presetId ? { ...preset, name: newName } : preset
-    )
-  })),
+  editPresetName: async (presetId, newName) => {
+    try {
+      const response = await fetch(`/api/presets/${presetId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newName
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update preset name');
+      }
+
+      // 更新本地状态
+      set((state) => ({
+        presets: state.presets.map(preset =>
+          preset.id === presetId ? { ...preset, name: newName } : preset
+        )
+      }));
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to update preset name:', error);
+      throw error;
+    }
+  },
 
   // 切换参数设置折叠状态
   toggleParametersExpanded: () => set((state) => ({
