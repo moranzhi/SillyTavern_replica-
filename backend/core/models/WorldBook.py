@@ -1,8 +1,14 @@
 import json
 import os
+import logging
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 from pydantic import BaseModel, Field, validator
-from .WorldItem import WorldInfoEntry, TriggerStrategy, PositionMode
+from .WorldItem import WorldInfoEntry, TriggerStrategy
+from backend.core.config import settings
+
+# 配置日志
+logger = logging.getLogger(__name__)
 
 
 class WorldBook(BaseModel):
@@ -11,27 +17,79 @@ class WorldBook(BaseModel):
 	管理多个世界书条目，支持导入导出 SillyTavern 格式
 	"""
 	# 世界书基本信息
-	uid: str = Field(..., description="世界书唯一标识符")
 	name: str = Field(..., description="世界书名称")
-	description: str = Field("", description="世界书描述")
 
 	# 条目集合
-	entries: List[WorldInfoEntry] = Field(
-			default_factory=list,
-			description="世界书条目列表"
+	entries: Dict[str, WorldInfoEntry] = Field(
+			default_factory=dict,
+			description="世界书条目字典对象 (Key-Value Map)"
 	)
-
-	# 全局配置
-	enabled: bool = Field(True, description="是否启用")
-	scan_depth: int = Field(4, description="默认扫描深度")
-	rag_threshold: float = Field(0.75, description="默认RAG相似度阈值")
 
 	@validator('entries')
 	def validate_entries_unique_uid(cls, v):
-		uids = [entry.uid for entry in v]
+		"""验证条目 UID 的唯一性"""
+		uids = [entry.uid for entry in v.values()]
 		if len(uids) != len(set(uids)):
+			logger.error("验证失败: 条目 UID 必须唯一")
 			raise ValueError("条目 UID 必须唯一")
 		return v
+
+	@classmethod
+	def get_file_path(cls, name: str) -> str:
+		"""
+		根据世界书名称获取文件路径
+
+		Args:
+			name: 世界书名称
+
+		Returns:
+			str: 完整的文件路径
+		"""
+		# 使用配置中的 WORLDBOOKS_PATH
+		return str(settings.WORLDBOOKS_PATH / f"{name}.json")
+
+	@classmethod
+	def exists(cls, name: str) -> bool:
+		"""
+		检查指定名称的世界书文件是否存在
+
+		Args:
+			name: 世界书名称
+
+		Returns:
+			bool: 文件是否存在
+		"""
+		file_path = cls.get_file_path(name)
+		return os.path.exists(file_path)
+
+	@classmethod
+	def create_empty(cls, name: str) -> 'WorldBook':
+		"""
+		创建并保存一个空白的世界书
+
+		Args:
+			name: 世界书名称
+		Returns:
+			WorldBook: 创建的世界书对象
+
+		Raises:
+			ValueError: 世界书已存在
+			IOError: 文件写入失败
+		"""
+		# 检查世界书是否已存在
+		if cls.exists(name):
+			raise ValueError(f"世界书 '{name}' 已存在")
+
+		# 创建空白世界书对象
+		world_book = cls(
+				name=name,
+		)
+
+		# 保存世界书
+		world_book.save()
+
+		logger.info(f"创建空白世界书: {name}")
+		return world_book
 
 	def add_entry(self, entry: WorldInfoEntry) -> None:
 		"""
@@ -39,12 +97,19 @@ class WorldBook(BaseModel):
 
 		Args:
 			entry: 世界书条目对象
-		"""
-		if any(e.uid == entry.uid for e in self.entries):
-			raise ValueError(f"条目 UID {entry.uid} 已存在")
-		self.entries.append(entry)
 
-	def remove_entry(self, uid: str) -> bool:
+		Raises:
+			ValueError: 条目 UID 已存在
+		"""
+		entry_key = str(entry.uid)
+		if entry_key in self.entries:
+			error_msg = f"添加条目失败: 条目 UID {entry.uid} 已存在于世界书 {self.name}"
+			logger.error(error_msg)
+			raise ValueError(error_msg)
+		self.entries[entry_key] = entry
+		logger.debug(f"已添加条目: UID={entry.uid}, 世界书={self.name}")
+
+	def remove_entry(self, uid: int) -> bool:
 		"""
 		移除世界书条目
 
@@ -54,11 +119,15 @@ class WorldBook(BaseModel):
 		Returns:
 			bool: 是否成功移除
 		"""
-		original_length = len(self.entries)
-		self.entries = [e for e in self.entries if e.uid != uid]
-		return len(self.entries) < original_length
+		entry_key = str(uid)
+		if entry_key in self.entries:
+			del self.entries[entry_key]
+			logger.info(f"已从世界书 {self.name} 移除条目: UID={uid}")
+			return True
+		logger.warning(f"尝试移除不存在的条目: 世界书 {self.name} 中未找到 UID={uid}")
+		return False
 
-	def get_entry(self, uid: str) -> Optional[WorldInfoEntry]:
+	def get_entry(self, uid: int) -> Optional[WorldInfoEntry]:
 		"""
 		获取指定 UID 的世界书条目
 
@@ -68,12 +137,15 @@ class WorldBook(BaseModel):
 		Returns:
 			Optional[WorldInfoEntry]: 找到的条目，未找到返回 None
 		"""
-		for entry in self.entries:
-			if entry.uid == uid:
-				return entry
-		return None
+		entry_key = str(uid)
+		entry = self.entries.get(entry_key)
+		if entry:
+			logger.debug(f"从世界书 {self.name} 获取条目: UID={uid}")
+		else:
+			logger.debug(f"在世界书 {self.name} 中未找到条目: UID={uid}")
+		return entry
 
-	def update_entry(self, uid: str, **kwargs) -> bool:
+	def update_entry(self, uid: int, **kwargs) -> bool:
 		"""
 		更新世界书条目
 
@@ -86,30 +158,32 @@ class WorldBook(BaseModel):
 		"""
 		entry = self.get_entry(uid)
 		if entry is None:
+			logger.warning(f"更新条目失败: 在世界书 {self.name} 中未找到 UID={uid}")
 			return False
 
 		for key, value in kwargs.items():
 			if hasattr(entry, key):
 				setattr(entry, key, value)
+		logger.info(f"已更新世界书 {self.name} 中的条目: UID={uid}, 更新字段={list(kwargs.keys())}")
 		return True
 
-	def filter_by_position(self, position_mode: PositionMode, position_value: int) -> List[WorldInfoEntry]:
+	def filter_by_position(self, position: int) -> List[WorldInfoEntry]:
 		"""
 		根据位置筛选条目
 
 		Args:
-			position_mode: 位置模式
-			position_value: 位置值
+			position: 位置值
 
 		Returns:
 			List[WorldInfoEntry]: 筛选后的条目列表
 		"""
-		return [
-			entry for entry in self.entries
-			if entry.position_mode == position_mode and
-			   (entry.position_anchor == position_value or
-			    (position_mode == PositionMode.ABSOLUTE_DEPTH and entry.position_dx == position_value))
+		filtered_entries = [
+			entry for entry in self.entries.values()
+			if entry.position == position
 		]
+		logger.debug(
+				f"在世界书 {self.name} 中按位置筛选: 值={position}, 结果数量={len(filtered_entries)}")
+		return filtered_entries
 
 	def get_summary(self) -> Dict[str, Any]:
 		"""
@@ -118,19 +192,17 @@ class WorldBook(BaseModel):
 		Returns:
 			Dict[str, Any]: 概要信息字典
 		"""
-		return {
-			"uid": self.uid,
+		summary = {
 			"name": self.name,
-			"description": self.description,
 			"entry_count": len(self.entries),
-			"enabled": self.enabled,
-			"scan_depth": self.scan_depth,
-			"rag_threshold": self.rag_threshold,
 			"trigger_strategies": {
-				strategy.value: sum(1 for e in self.entries if e.trigger_strategy == strategy)
+				strategy.value: sum(1 for e in self.entries.values()
+				                    if strategy in e.trigger_config.get_enabled_triggers())
 				for strategy in TriggerStrategy
 			}
 		}
+		logger.debug(f"获取世界书 {self.name} 的概要信息")
+		return summary
 
 	def to_summary_dict(self) -> Dict[str, Any]:
 		"""
@@ -139,209 +211,122 @@ class WorldBook(BaseModel):
 		Returns:
 			Dict[str, Any]: 包含基本信息的字典
 		"""
-		return {
-			"uid": self.uid,
+		summary = {
 			"name": self.name,
-			"description": self.description,
 			"entry_count": len(self.entries),
-			"enabled": self.enabled
 		}
-
-	@classmethod
-	def from_dict(cls, data: Dict) -> 'WorldBook':
-		"""
-		从字典创建 WorldBook 对象，支持多种数据格式
-
-		Args:
-			data: 包含世界书数据的字典
-
-		Returns:
-			WorldBook: 世界书对象
-
-		Raises:
-			ValueError: 数据格式无效
-		"""
-		# 处理包含 originalData 的格式
-		if 'originalData' in data:
-			original_data = data['originalData']
-			return cls(
-					uid=data.get('uid') or original_data.get('name', 'unknown'),
-					name=original_data.get('name', 'Unknown'),
-					description=original_data.get('description', ''),
-					enabled=data.get('enabled', True),
-					entries=[WorldInfoEntry(**entry) for entry in data.get('entries', {}).values()]
-			)
-
-		# 处理标准格式
-		return cls(**data)
+		logger.debug(f"生成世界书 {self.name} 的摘要信息")
+		return summary
 
 	def to_dict(self) -> Dict:
 		"""
-		将 WorldBook 转换为字典，兼容多种格式
+		将 WorldBook 转换为字典
 
 		Returns:
 			Dict: 世界书数据字典
 		"""
-		return {
-			'uid': self.uid,
+		result = {
 			'name': self.name,
-			'description': self.description,
-			'enabled': self.enabled,
-			'entries': {entry.uid: entry.dict() for entry in self.entries}
+			'entries': {uid: entry.dict() for uid, entry in self.entries.items()}
 		}
+		logger.debug(f"将世界书 {self.name} 转换为字典")
+		return result
 
 	@classmethod
-	def from_sillytavern_json(cls, file_path: str) -> 'WorldBook':
+	@classmethod
+	def load(cls, name: str) -> 'WorldBook':
 		"""
-		从 SillyTavern 格式的 JSON 文件加载世界书
+		从文件加载世界书（只有 entries 字段的格式）
 
 		Args:
-			file_path: JSON 文件路径
+			name: 世界书名称
 
 		Returns:
 			WorldBook: 世界书对象
 
 		Raises:
 			FileNotFoundError: 文件不存在
-			ValueError: 格式不符合 SillyTavern 标准
+			ValueError: 格式不符合标准
 			json.JSONDecodeError: JSON 解析错误
 		"""
+		file_path = cls.get_file_path(name)
 		if not os.path.exists(file_path):
-			raise FileNotFoundError(f"世界书文件未找到: {file_path}")
+			error_msg = f"世界书文件未找到: {file_path}"
+			logger.error(error_msg)
+			raise FileNotFoundError(error_msg)
 
-		with open(file_path, 'r', encoding='utf-8') as f:
-			raw_data = json.load(f)
+		try:
+			with open(file_path, 'r', encoding='utf-8') as f:
+				raw_data = json.load(f)
 
-		# 创建世界书对象
-		world_name = raw_data.get("name", "")
-		if not world_name:
-			# 如果 name 字段不存在或为空，从文件名中提取
-			file_name = os.path.splitext(os.path.basename(file_path))[0]
-			world_name = file_name
+			# 世界书名称始终使用文件名（不包括后缀名）
+			world_name = name
 
-		# 检查是否有 originalData 字段
-		if "originalData" in raw_data:
-			# 使用 originalData 格式
-			original_data = raw_data["originalData"]
-			world_book = cls(
-					uid=f"st_{os.path.basename(file_path)}_{int(os.path.getmtime(file_path))}",
-					name=world_name,
-					description=f"从 SillyTavern 导入: {file_path}"
-			)
-
-			# 转换 originalData 中的条目
-			for entry_data in original_data.get("entries", []):
-				try:
-					world_entry = WorldInfoEntry(
-							uid=str(entry_data.get("id", "")),
-							key=entry_data.get("keys", []),
-							keysecondary=entry_data.get("secondary_keys", []),
-							comment=entry_data.get("comment", ""),
-							content=entry_data.get("content", ""),
-							trigger_strategy=TriggerStrategy.KEYWORD,
-							position_mode=PositionMode.ANCHOR if entry_data.get(
-								"position") == "after_char" else PositionMode.ABSOLUTE_DEPTH,
-							position_anchor=0,
-							position_dx=None,
-							constant=entry_data.get("constant", False),
-							selective=entry_data.get("selective", True),
-							order=entry_data.get("insertion_order", 100),
-							probability=entry_data.get("extensions", {}).get("probability", 100),
-							useProbability=entry_data.get("extensions", {}).get("useProbability", False),
-							group=entry_data.get("extensions", {}).get("group", None),
-							match_whole_words=entry_data.get("use_regex", False),
-							use_regex=entry_data.get("use_regex", False),
-							vectorized=False
-					)
-					world_book.add_entry(world_entry)
-				except Exception as e:
-					print(f"警告: 跳过条目，解析失败: {e}")
-		else:
-			# 使用标准 SillyTavern 格式
+			# 直接使用 entries 字段
 			entries_dict = raw_data.get("entries", {})
 			if not isinstance(entries_dict, dict):
-				raise ValueError("无效的世界书格式：'entries' 字段必须是一个字典。")
+				error_msg = "无效的世界书格式：'entries' 字段必须是一个字典。"
+				logger.error(error_msg)
+				raise ValueError(error_msg)
 
-			if not any(key.isdigit() for key in entries_dict.keys()):
-				raise ValueError("无效的世界书格式：'entries' 中未找到条目。请确认是 SillyTavern 导出的格式。")
-
+			# 创建世界书对象
 			world_book = cls(
-					uid=f"st_{os.path.basename(file_path)}_{int(os.path.getmtime(file_path))}",
 					name=world_name,
-					description=f"从 SillyTavern 导入: {file_path}"
 			)
 
 			# 转换标准格式的条目
 			for uid, entry_data in entries_dict.items():
 				try:
-					position = entry_data.get("position", 0)
-					position_mode = PositionMode.ANCHOR if position < 6 else PositionMode.ABSOLUTE_DEPTH
-
-					world_entry = WorldInfoEntry(
-							uid=uid,
-							key=entry_data.get("key", []),
-							keysecondary=entry_data.get("keysecondary", []),
-							comment=entry_data.get("comment", ""),
-							content=entry_data.get("content", ""),
-							trigger_strategy=TriggerStrategy.KEYWORD,
-							position_mode=position_mode,
-							position_anchor=position if position < 6 else 0,
-							position_dx=position if position >= 6 else None,
-							constant=entry_data.get("constant", False),
-							selective=entry_data.get("selective", True),
-							order=entry_data.get("order", 100),
-							probability=entry_data.get("probability", 100),
-							useProbability=entry_data.get("useProbability", False),
-							group=entry_data.get("group", None),
-							match_whole_words=entry_data.get("matchWholeWords", False),
-							use_regex=entry_data.get("useRegex", False),
-							vectorized=False
-					)
+					world_entry = WorldInfoEntry.from_sillytavern_data(entry_data)
 					world_book.add_entry(world_entry)
 				except Exception as e:
-					print(f"警告: 跳过条目 {uid}，解析失败: {e}")
+					logger.warning(f"跳过条目 {uid}，解析失败: {e}")
 
-		return world_book
+			logger.info(
+					f"从文件加载世界书: 文件={file_path}, 名称={world_name}, 条目数={len(world_book.entries)}")
 
-	def to_sillytavern_json(self, file_path: str) -> None:
+			return world_book
+		except json.JSONDecodeError as e:
+			error_msg = f"JSON 解析错误: {str(e)}"
+			logger.error(error_msg)
+			raise ValueError(error_msg)
+		except Exception as e:
+			error_msg = f"从文件加载世界书失败: {str(e)}"
+			logger.error(error_msg)
+			raise ValueError(error_msg)
+
+	def save(self) -> None:
 		"""
-		导出为 SillyTavern 格式的 JSON 文件
+		保存世界书到文件（只有 entries 字段的格式）
+		如果文件不存在，会创建新文件；如果文件存在，会更新现有文件
 
-		Args:
-			file_path: 要保存的文件路径
+		Raises:
+			IOError: 文件写入失败
 		"""
-		entries_dict = {}
+		file_path = self.get_file_path(self.name)
 
-		for entry in self.entries:
-			# 映射 WorldInfoEntry 到 SillyTavern 格式
-			position = entry.position_anchor if entry.position_mode == PositionMode.ANCHOR else entry.position_dx
+		# 确保目录存在
+		os.makedirs(Path(file_path).parent, exist_ok=True)
 
-			entries_dict[entry.uid] = {
-				"uid": entry.uid,
-				"key": entry.key,
-				"keysecondary": entry.keysecondary,
-				"comment": entry.comment,
-				"content": entry.content,
-				"constant": entry.constant,
-				"selective": entry.selective,
-				"position": position,
-				"order": entry.order,
-				"probability": entry.probability,
-				"useProbability": entry.useProbability,
-				"group": entry.group,
-				"matchWholeWords": entry.match_whole_words,
-				"useRegex": entry.use_regex,
-				"preventRecursion": True,
-				"excludeRecursion": True
+		try:
+			# 转换为标准格式
+			entries_dict = {}
+			for uid, entry in self.entries.items():
+				entries_dict[uid] = entry.to_sillytavern_dict()
+
+			output_data = {
+				"entries": entries_dict
 			}
 
-		output_data = {
-			"entries": entries_dict,
-			"name": self.name
-		}
+			with open(file_path, 'w', encoding='utf-8') as f:
+				json.dump(output_data, f, ensure_ascii=False, indent=2)
 
-		with open(file_path, 'w', encoding='utf-8') as f:
-			json.dump(output_data, f, ensure_ascii=False, indent=2)
+			logger.info(
+					f"世界书已保存: 文件={file_path}, 名称={self.name}, 条目数={len(self.entries)}")
+		except Exception as e:
+			error_msg = f"保存世界书失败: {str(e)}"
+			logger.error(error_msg)
+			raise IOError(error_msg)
 
 	def list_triggers_and_content(self) -> List[Dict[str, Any]]:
 		"""
@@ -351,24 +336,108 @@ class WorldBook(BaseModel):
 			List[Dict[str, Any]]: 包含 trigger (key) 和 content 的列表
 		"""
 		result = []
-		for entry in self.entries:
+		for uid, entry in self.entries.items():
+			# 获取启用的触发策略
+			enabled_triggers = entry.trigger_config.get_enabled_triggers()
+
+			# 检查是否启用了关键词触发
+			keyword_enabled, keyword_config = entry.trigger_config.get_trigger(TriggerStrategy.KEYWORD)
+			triggers = keyword_config.key if keyword_enabled and keyword_config else []
+
+			# 检查是否启用了永久触发
+			constant_enabled, _ = entry.trigger_config.get_trigger(TriggerStrategy.CONSTANT)
+
 			result.append({
 				"uid": entry.uid,
 				"comment": entry.comment,
-				"triggers": entry.key,
+				"triggers": triggers,
 				"content": entry.content,
-				"position": entry.position_anchor if entry.position_mode == PositionMode.ANCHOR else entry.position_dx,
-				"constant": entry.constant,
-				"trigger_strategy": entry.trigger_strategy.value
+				"position": entry.position,
+				"constant": constant_enabled,
+				"trigger_strategies": [strategy.value for strategy in enabled_triggers]
 			})
+		logger.debug(f"列出世界书 {self.name} 的触发词和内容: 条目数={len(result)}")
 		return result
+
+	def get_all_entries(self) -> List[Dict[str, Any]]:
+		"""
+		获取所有条目的核心信息（包括已禁用的条目）
+
+		Returns:
+			List[Dict[str, Any]]: 包含核心信息的条目列表
+		"""
+		result = []
+		for uid, entry in self.entries.items():
+			# 获取启用的触发策略
+			enabled_triggers = entry.trigger_config.get_enabled_triggers()
+
+			# 检查是否启用了永久触发
+			constant_enabled, _ = entry.trigger_config.get_trigger(TriggerStrategy.CONSTANT)
+
+			result.append({
+				"uid": entry.uid,
+				"comment": entry.comment,
+				"content": entry.content,
+				"constant": constant_enabled,
+				"position": entry.position,
+				"order": entry.order,
+				"role": entry.role,
+				"disable": entry.disable,
+				"trigger_strategies": [strategy.value for strategy in enabled_triggers],
+				"trigger_params": entry.get_trigger_params()
+			})
+		logger.debug(f"获取世界书 {self.name} 的所有条目: 条目数={len(result)}")
+		return result
+
+	def merge_from_book(self, other_book: 'WorldBook') -> None:
+		"""
+		从另一个世界书合并条目
+
+		Args:
+			other_book: 要合并的世界书对象
+		"""
+		for uid, entry in other_book.entries.items():
+			if uid in self.entries:
+				# 更新现有条目
+				for key, value in entry.dict().items():
+					if key != 'uid':  # 不更新 UID
+						setattr(self.entries[uid], key, value)
+			else:
+				# 添加新条目
+				self.add_entry(entry)
+		logger.info(f"合并世界书: 从 {other_book.name} 合并到 {self.name}")
+
+	def to_sillytavern_json(self, file_path: str) -> None:
+		"""
+		导出为 SillyTavern 格式的 JSON 文件
+
+		Args:
+			file_path: 导出文件路径
+		"""
+		# 转换为 SillyTavern 格式
+		entries_dict = {}
+		for uid, entry in self.entries.items():
+			entries_dict[uid] = entry.to_sillytavern_dict()
+
+		output_data = {
+			"entries": entries_dict,
+			"name": self.name
+		}
+
+		with open(file_path, 'w', encoding='utf-8') as f:
+			json.dump(output_data, f, ensure_ascii=False, indent=2)
+
+		logger.info(f"导出世界书为 SillyTavern 格式: 文件={file_path}")
 
 
 # --- 使用示例 ---
 if __name__ == "__main__":
 	try:
-		# 从 SillyTavern 格式导入
-		world_book = WorldBook.from_sillytavern_json('entries.json')
+		# 创建空白世界书
+		world_book = WorldBook.create_empty("test_worldbook", "测试世界书")
+
+		# 加载世界书
+		world_book = WorldBook.load("test_worldbook")
 
 		# 打印概要
 		summary = world_book.get_summary()
@@ -383,9 +452,9 @@ if __name__ == "__main__":
 			content_preview = item['content'][:50].replace('\n', ' ') + "..."
 			print(f"[{item['position']}] TRIGGERS: {triggers} -> CONTENT: {content_preview}")
 
-		# 导出为 SillyTavern 格式
-		world_book.to_sillytavern_json('exported_world.json')
-		print("\n✅ 世界书已导出为 exported_world.json")
+		# 保存世界书
+		world_book.save()
+		print(f"\n✅ 世界书已保存")
 
 	except Exception as e:
 		print(f"❌ 错误: {e}")

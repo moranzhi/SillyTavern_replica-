@@ -5,7 +5,7 @@ services:
     build: ./backend
     command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
-      - "3001:8000"
+      - "23337:8000"
     volumes:
       - ./backend:/app/backend
       - ./data:/app/data
@@ -19,7 +19,7 @@ services:
       context: ./frontend-react
       dockerfile: Dockerfile
     ports:
-      - "3000:5173"
+      - "23338:5173"
     volumes:
       - ./frontend-react:/app
       - /app/node_modules

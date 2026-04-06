@@ -102,7 +102,7 @@ class ChatHistory(BaseModel):
 		"""获取所有角色的所有聊天列表"""
 		data_dir = cls.get_data_path()
 		if not data_dir.exists():
-			return {"chats": []}
+			return {"chat": []}
 
 		chats = []
 		for role_dir in data_dir.iterdir():
@@ -123,7 +123,7 @@ class ChatHistory(BaseModel):
 							})
 					except Exception:
 						continue  # 跳过损坏的聊天文件
-		return {"chats": chats}
+		return {"chat": chats}
 
 	@classmethod
 	async def get_chat(cls, role_name: str, chat_name: str) -> Dict[str, Any]:

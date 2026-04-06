@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from backend.core.models.chat_history import ChatHistory, Message
 
-router = APIRouter(prefix="/chats", tags=["chats"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 # ========== 聊天历史基础路由 ==========
