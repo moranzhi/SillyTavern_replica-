@@ -10,15 +10,17 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import JSONResponse, FileResponse
 
 # 本地模块导入
+# 本地模块导入
 from backend.core.models.WorldBook import WorldBook
 from backend.core.models.WorldItem import (
-	WorldInfoEntry,
+	WorldItem,
 	TriggerConfig,
 	KeywordTriggerConfig,
 	RAGTriggerConfig,
 	ConditionTriggerConfig,
 	TriggerStrategy
 )
+
 from backend.core.config import settings
 
 # 配置日志
@@ -94,7 +96,6 @@ async def get_worldbook(name: str):
 @router.post("/", response_model=Dict[str, Any])
 async def create_worldbook(
 		name: str = Form(...),
-		description: str = Form(""),
 		file: Optional[UploadFile] = File(None)
 ):
 	"""
@@ -121,7 +122,6 @@ async def create_worldbook(
 				world_book = WorldBook.load(Path(temp_path).stem)
 				# 更新名称和描述
 				world_book.name = name
-				world_book.description = description
 				# 保存世界书
 				world_book.save()
 				logger.info(f"从文件创建世界书: {name}")
@@ -131,7 +131,7 @@ async def create_worldbook(
 					os.remove(temp_path)
 		else:
 			# 创建空世界书
-			world_book = WorldBook.create_empty(name, description)
+			world_book = WorldBook.create_empty(name)
 			logger.info(f"创建空世界书: {name}")
 
 		return world_book.to_dict()
@@ -145,7 +145,6 @@ async def create_worldbook(
 @router.put("/{name}", response_model=Dict[str, Any])
 async def update_worldbook(
 		name: str,
-		description: Optional[str] = Form(None),
 		file: Optional[UploadFile] = File(None)
 ):
 	"""
@@ -184,10 +183,6 @@ async def update_worldbook(
 				# 删除临时文件
 				if os.path.exists(temp_path):
 					os.remove(temp_path)
-
-		# 更新描述（如果提供）
-		if description is not None:
-			world_book.description = description
 
 		# 保存世界书
 		world_book.save()
@@ -289,7 +284,7 @@ async def get_worldbook_entry(name: str, uid: int):
 			raise HTTPException(status_code=404, detail=f"条目 UID {uid} 不存在")
 
 		logger.info(f"获取世界书 {name} 的条目: UID={uid}")
-		return entry.dict()
+		return entry.to_dict()
 	except HTTPException:
 		raise
 	except Exception as e:
@@ -350,7 +345,7 @@ async def create_worldbook_entry(name: str, entry_data: Dict[str, Any]):
 			entry_data["trigger_config"] = trigger_config
 
 		# 创建条目
-		entry = WorldInfoEntry(**entry_data)
+		entry = WorldItem.Entry(**entry_data)
 
 		# 添加条目
 		world_book.add_entry(entry)
@@ -359,7 +354,7 @@ async def create_worldbook_entry(name: str, entry_data: Dict[str, Any]):
 		world_book.save()
 
 		logger.info(f"在世界书 {name} 中创建条目: UID={entry.uid}")
-		return entry.dict()
+		return entry.to_dict()
 	except HTTPException:
 		raise
 	except Exception as e:
@@ -424,8 +419,7 @@ async def update_worldbook_entry(name: str, uid: int, entry_data: Dict[str, Any]
 			# 设置触发配置
 			entry_data["trigger_config"] = trigger_config
 
-		# 过滤无效字段，只保留 WorldInfoEntry 中存在的字段
-		valid_fields = WorldInfoEntry.__fields__.keys()
+		valid_fields = WorldItem.Entry.model_fields.keys()
 		filtered_data = {k: v for k, v in entry_data.items() if k in valid_fields}
 
 		# 更新条目
@@ -440,7 +434,7 @@ async def update_worldbook_entry(name: str, uid: int, entry_data: Dict[str, Any]
 		entry = world_book.get_entry(uid)
 
 		logger.info(f"更新世界书 {name} 的条目: UID={uid}")
-		return entry.dict()
+		return entry.to_dict()
 	except HTTPException:
 		raise
 	except Exception as e:

@@ -3,8 +3,8 @@ import os
 import logging
 from typing import Dict, List, Optional, Any
 from pathlib import Path
-from pydantic import BaseModel, Field, validator
-from .WorldItem import WorldInfoEntry, TriggerStrategy
+from pydantic import BaseModel, Field, field_validator
+from .WorldItem import WorldItem, TriggerStrategy
 from backend.core.config import settings
 
 # 配置日志
@@ -20,12 +20,13 @@ class WorldBook(BaseModel):
 	name: str = Field(..., description="世界书名称")
 
 	# 条目集合
-	entries: Dict[str, WorldInfoEntry] = Field(
+	entries: Dict[str, WorldItem.Entry] = Field(
 			default_factory=dict,
 			description="世界书条目字典对象 (Key-Value Map)"
 	)
 
-	@validator('entries')
+	@field_validator('entries')
+	@classmethod
 	def validate_entries_unique_uid(cls, v):
 		"""验证条目 UID 的唯一性"""
 		uids = [entry.uid for entry in v.values()]
@@ -91,7 +92,7 @@ class WorldBook(BaseModel):
 		logger.info(f"创建空白世界书: {name}")
 		return world_book
 
-	def add_entry(self, entry: WorldInfoEntry) -> None:
+	def add_entry(self, entry: WorldItem.Entry) -> None:
 		"""
 		添加世界书条目
 
@@ -127,7 +128,7 @@ class WorldBook(BaseModel):
 		logger.warning(f"尝试移除不存在的条目: 世界书 {self.name} 中未找到 UID={uid}")
 		return False
 
-	def get_entry(self, uid: int) -> Optional[WorldInfoEntry]:
+	def get_entry(self, uid: int) -> Optional[WorldItem.Entry]:
 		"""
 		获取指定 UID 的世界书条目
 
@@ -135,7 +136,7 @@ class WorldBook(BaseModel):
 			uid: 条目 UID
 
 		Returns:
-			Optional[WorldInfoEntry]: 找到的条目，未找到返回 None
+			Optional[WorldItem.Entry]: 找到的条目，未找到返回 None
 		"""
 		entry_key = str(uid)
 		entry = self.entries.get(entry_key)
@@ -167,7 +168,7 @@ class WorldBook(BaseModel):
 		logger.info(f"已更新世界书 {self.name} 中的条目: UID={uid}, 更新字段={list(kwargs.keys())}")
 		return True
 
-	def filter_by_position(self, position: int) -> List[WorldInfoEntry]:
+	def filter_by_position(self, position: int) -> List[WorldItem.Entry]:
 		"""
 		根据位置筛选条目
 
@@ -175,7 +176,7 @@ class WorldBook(BaseModel):
 			position: 位置值
 
 		Returns:
-			List[WorldInfoEntry]: 筛选后的条目列表
+			List[WorldItem.Entry]: 筛选后的条目列表
 		"""
 		filtered_entries = [
 			entry for entry in self.entries.values()
@@ -227,12 +228,11 @@ class WorldBook(BaseModel):
 		"""
 		result = {
 			'name': self.name,
-			'entries': {uid: entry.dict() for uid, entry in self.entries.items()}
+			'entries': {uid: entry.model_dump() for uid, entry in self.entries.items()}
 		}
 		logger.debug(f"将世界书 {self.name} 转换为字典")
 		return result
 
-	@classmethod
 	@classmethod
 	def load(cls, name: str) -> 'WorldBook':
 		"""
@@ -277,7 +277,10 @@ class WorldBook(BaseModel):
 			# 转换标准格式的条目
 			for uid, entry_data in entries_dict.items():
 				try:
-					world_entry = WorldInfoEntry.from_sillytavern_data(entry_data)
+					# 先使用 WorldItem 解析数据
+					world_item = WorldItem.from_sillytavern_data(entry_data)
+					# 然后转换为 Entry
+					world_entry = world_item.to_entry()
 					world_book.add_entry(world_entry)
 				except Exception as e:
 					logger.warning(f"跳过条目 {uid}，解析失败: {e}")
@@ -336,26 +339,20 @@ class WorldBook(BaseModel):
 			List[Dict[str, Any]]: 包含 trigger (key) 和 content 的列表
 		"""
 		result = []
-		for uid, entry in self.entries.items():
-			# 获取启用的触发策略
+		for entry in self.entries.values():
+			entry_dict = entry.to_dict()
+			# 添加额外的触发相关信息
 			enabled_triggers = entry.trigger_config.get_enabled_triggers()
-
-			# 检查是否启用了关键词触发
 			keyword_enabled, keyword_config = entry.trigger_config.get_trigger(TriggerStrategy.KEYWORD)
-			triggers = keyword_config.key if keyword_enabled and keyword_config else []
-
-			# 检查是否启用了永久触发
 			constant_enabled, _ = entry.trigger_config.get_trigger(TriggerStrategy.CONSTANT)
 
-			result.append({
-				"uid": entry.uid,
-				"comment": entry.comment,
-				"triggers": triggers,
-				"content": entry.content,
-				"position": entry.position,
+			entry_dict.update({
+				"triggers": keyword_config.key if keyword_enabled and keyword_config else [],
 				"constant": constant_enabled,
 				"trigger_strategies": [strategy.value for strategy in enabled_triggers]
 			})
+			result.append(entry_dict)
+
 		logger.debug(f"列出世界书 {self.name} 的触发词和内容: 条目数={len(result)}")
 		return result
 
@@ -366,26 +363,7 @@ class WorldBook(BaseModel):
 		Returns:
 			List[Dict[str, Any]]: 包含核心信息的条目列表
 		"""
-		result = []
-		for uid, entry in self.entries.items():
-			# 获取启用的触发策略
-			enabled_triggers = entry.trigger_config.get_enabled_triggers()
-
-			# 检查是否启用了永久触发
-			constant_enabled, _ = entry.trigger_config.get_trigger(TriggerStrategy.CONSTANT)
-
-			result.append({
-				"uid": entry.uid,
-				"comment": entry.comment,
-				"content": entry.content,
-				"constant": constant_enabled,
-				"position": entry.position,
-				"order": entry.order,
-				"role": entry.role,
-				"disable": entry.disable,
-				"trigger_strategies": [strategy.value for strategy in enabled_triggers],
-				"trigger_params": entry.get_trigger_params()
-			})
+		result = [entry.to_dict() for entry in self.entries.values()]
 		logger.debug(f"获取世界书 {self.name} 的所有条目: 条目数={len(result)}")
 		return result
 
@@ -434,7 +412,7 @@ class WorldBook(BaseModel):
 if __name__ == "__main__":
 	try:
 		# 创建空白世界书
-		world_book = WorldBook.create_empty("test_worldbook", "测试世界书")
+		world_book = WorldBook.create_empty("test_worldbook")
 
 		# 加载世界书
 		world_book = WorldBook.load("test_worldbook")

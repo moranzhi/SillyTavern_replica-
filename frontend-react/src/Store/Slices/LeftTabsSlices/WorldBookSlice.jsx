@@ -1,5 +1,28 @@
 import { create } from 'zustand';
 
+// LocalStorage 键名
+const GLOBAL_WORLDBOOKS_KEY = 'global_worldbooks';
+
+// 辅助函数：从 LocalStorage 加载全局世界书
+const loadGlobalWorldBooks = () => {
+  try {
+    const stored = localStorage.getItem(GLOBAL_WORLDBOOKS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('加载全局世界书失败:', error);
+    return [];
+  }
+};
+
+// 辅助函数：保存全局世界书到 LocalStorage
+const saveGlobalWorldBooks = (globalBooks) => {
+  try {
+    localStorage.setItem(GLOBAL_WORLDBOOKS_KEY, JSON.stringify(globalBooks));
+  } catch (error) {
+    console.error('保存全局世界书失败:', error);
+  }
+};
+
 // 辅助函数：处理 API 响应
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -26,7 +49,7 @@ const handleFileDownload = async (response, filename) => {
 const useWorldBookStore = create((set, get) => ({
   // 状态
   worldBooks: [], // 世界书列表
-  globalWorldBooks: [], // 全局世界书列表
+  globalWorldBooks: loadGlobalWorldBooks(), // 从 LocalStorage 初始化全局世界书列表
   currentWorldBook: null, // 当前选中的世界书
   currentEntries: [], // 当前世界书的条目列表
   currentEntry: null, // 当前选中的条目
@@ -58,14 +81,7 @@ const useWorldBookStore = create((set, get) => ({
   toggleGlobalWorldBook: async (name, isGlobal) => {
     set({ loading: true, error: null, success: false });
     try {
-      // 先获取当前世界书的信息
-      const currentBook = get().worldBooks.find(wb => wb.name === name);
-      if (!currentBook) {
-        throw new Error(`世界书 "${name}" 不存在`);
-      }
-
       const formData = new FormData();
-      formData.append('description', currentBook.description);
       formData.append('is_global', isGlobal);
 
       const response = await fetch(`/api/worldbooks/${name}`, {
@@ -100,6 +116,9 @@ const useWorldBookStore = create((set, get) => ({
           }
         }
 
+        // 保存到 LocalStorage
+        saveGlobalWorldBooks(updatedGlobalBooks);
+
         return {
           loading: false,
           worldBooks: updatedWorldBooks,
@@ -108,7 +127,6 @@ const useWorldBookStore = create((set, get) => ({
             ? data
             : state.currentWorldBook,
           success: true,
-          message: isGlobal ? `已将 "${name}" 设置为全局世界书` : `已取消 "${name}" 的全局世界书状态`
         };
       });
 
@@ -130,8 +148,8 @@ const useWorldBookStore = create((set, get) => ({
       const response = await fetch(`/api/worldbooks/`);
       const data = await handleResponse(response);
 
-      // 筛选出全局世界书
-      const globalBooks = data.filter(book => book.is_global);
+      // 从 LocalStorage 获取全局世界书列表
+      const globalBooks = loadGlobalWorldBooks();
 
       set({
         loading: false,
@@ -171,12 +189,11 @@ const useWorldBookStore = create((set, get) => ({
   },
 
   // 异步操作：创建世界书
-  createWorldBook: async ({ name, description, is_global, file }) => {
+  createWorldBook: async ({ name, is_global, file }) => {
     set({ loading: true, error: null, success: false });
     try {
       const formData = new FormData();
       formData.append('name', name);
-      formData.append('description', description || '');
       if (is_global !== undefined) {
         formData.append('is_global', is_global);
       }
@@ -193,9 +210,13 @@ const useWorldBookStore = create((set, get) => ({
 
       set(state => {
         const newWorldBooks = [...state.worldBooks, data];
-        const newGlobalBooks = data.is_global
-          ? [...state.globalWorldBooks, data]
-          : state.globalWorldBooks;
+        let newGlobalBooks = [...state.globalWorldBooks];
+
+        // 如果是世界书被标记为全局，添加到全局列表
+        if (data.is_global) {
+          newGlobalBooks = [...newGlobalBooks, data];
+          saveGlobalWorldBooks(newGlobalBooks);
+        }
 
         return {
           loading: false,
@@ -219,13 +240,10 @@ const useWorldBookStore = create((set, get) => ({
   },
 
   // 异步操作：更新世界书
-  updateWorldBook: async ({ name, description, is_global, file }) => {
+  updateWorldBook: async ({ name, is_global, file }) => {
     set({ loading: true, error: null, success: false });
     try {
       const formData = new FormData();
-      if (description !== undefined) {
-        formData.append('description', description);
-      }
       if (is_global !== undefined) {
         formData.append('is_global', is_global);
       }
@@ -265,6 +283,9 @@ const useWorldBookStore = create((set, get) => ({
           }
         }
 
+        // 保存到 LocalStorage
+        saveGlobalWorldBooks(updatedGlobalBooks);
+
         return {
           loading: false,
           worldBooks: updatedWorldBooks,
@@ -301,6 +322,9 @@ const useWorldBookStore = create((set, get) => ({
       set(state => {
         const filteredWorldBooks = state.worldBooks.filter(wb => wb.name !== name);
         const filteredGlobalBooks = state.globalWorldBooks.filter(wb => wb.name !== name);
+
+        // 保存到 LocalStorage
+        saveGlobalWorldBooks(filteredGlobalBooks);
 
         return {
           loading: false,
@@ -387,144 +411,142 @@ const useWorldBookStore = create((set, get) => ({
     }
   },
 
-    // 异步操作：创建世界书条目
-    createWorldBookEntry: async (name, entryData) => {
-      set({ loading: true, error: null, success: false });
-      try {
-        // 处理触发配置数据
-        const processedEntryData = { ...entryData };
-        if (processedEntryData.trigger_config && processedEntryData.trigger_config.triggers) {
-          // 创建新的触发配置对象
-          const triggerConfig = {
-            triggers: {}
-          };
+  // 异步操作：创建世界书条目
+  createWorldBookEntry: async (name, entryData) => {
+    set({ loading: true, error: null, success: false });
+    try {
+      // 处理触发配置数据
+      const processedEntryData = { ...entryData };
+      if (processedEntryData.trigger_config && processedEntryData.trigger_config.triggers) {
+        // 创建新的触发配置对象
+        const triggerConfig = {
+          triggers: {}
+        };
 
-          // 处理每个触发策略
-          for (const [strategy, triggerInfo] of Object.entries(processedEntryData.trigger_config.triggers)) {
-            if (Array.isArray(triggerInfo) && triggerInfo.length >= 2) {
-              triggerConfig.triggers[strategy] = [
-                triggerInfo[0], // 是否启用
-                triggerInfo[1]  // 配置对象
-              ];
-            } else {
-              // 如果格式不正确，设置为不启用
-              triggerConfig.triggers[strategy] = [false, null];
-            }
+        // 处理每个触发策略
+        for (const [strategy, triggerInfo] of Object.entries(processedEntryData.trigger_config.triggers)) {
+          if (Array.isArray(triggerInfo) && triggerInfo.length >= 2) {
+            triggerConfig.triggers[strategy] = [
+              triggerInfo[0], // 是否启用
+              triggerInfo[1]  // 配置对象
+            ];
+          } else {
+            // 如果格式不正确，设置为不启用
+            triggerConfig.triggers[strategy] = [false, null];
           }
-
-          processedEntryData.trigger_config = triggerConfig;
         }
 
-        const response = await fetch(`/api/worldbooks/${name}/entries`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(processedEntryData)
-        });
+        processedEntryData.trigger_config = triggerConfig;
+      }
 
-        const data = await handleResponse(response);
+      const response = await fetch(`/api/worldbooks/${name}/entries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(processedEntryData)
+      });
 
-        set(state => {
-          if (state.currentWorldBook?.name === name) {
-            return {
-              loading: false,
-              currentEntries: [...state.currentEntries, data],
-              success: true,
-              message: '条目创建成功'
-            };
-          }
+      const data = await handleResponse(response);
+
+      set(state => {
+        if (state.currentWorldBook?.name === name) {
           return {
             loading: false,
+            currentEntries: [...state.currentEntries, data],
             success: true,
             message: '条目创建成功'
           };
-        });
-
-        return data;
-      } catch (error) {
-        set({
+        }
+        return {
           loading: false,
-          error: error.message,
-          success: false
-        });
-        throw error;
-      }
-    },
+          success: true,
+          message: '条目创建成功'
+        };
+      });
 
+      return data;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error.message,
+        success: false
+      });
+      throw error;
+    }
+  },
 
-    // 异步操作：更新世界书条目
-    updateWorldBookEntry: async (name, uid, entryData) => {
-      set({ loading: true, error: null, success: false });
-      try {
-        // 处理触发配置数据
-        const processedEntryData = { ...entryData };
-        if (processedEntryData.trigger_config && processedEntryData.trigger_config.triggers) {
-          // 创建新的触发配置对象
-          const triggerConfig = {
-            triggers: {}
-          };
+  // 异步操作：更新世界书条目
+  updateWorldBookEntry: async (name, uid, entryData) => {
+    set({ loading: true, error: null, success: false });
+    try {
+      // 处理触发配置数据
+      const processedEntryData = { ...entryData };
+      if (processedEntryData.trigger_config && processedEntryData.trigger_config.triggers) {
+        // 创建新的触发配置对象
+        const triggerConfig = {
+          triggers: {}
+        };
 
-          // 处理每个触发策略
-          for (const [strategy, triggerInfo] of Object.entries(processedEntryData.trigger_config.triggers)) {
-            if (Array.isArray(triggerInfo) && triggerInfo.length >= 2) {
-              triggerConfig.triggers[strategy] = [
-                triggerInfo[0], // 是否启用
-                triggerInfo[1]  // 配置对象
-              ];
-            } else {
-              // 如果格式不正确，设置为不启用
-              triggerConfig.triggers[strategy] = [false, null];
-            }
+        // 处理每个触发策略
+        for (const [strategy, triggerInfo] of Object.entries(processedEntryData.trigger_config.triggers)) {
+          if (Array.isArray(triggerInfo) && triggerInfo.length >= 2) {
+            triggerConfig.triggers[strategy] = [
+              triggerInfo[0], // 是否启用
+              triggerInfo[1]  // 配置对象
+            ];
+          } else {
+            // 如果格式不正确，设置为不启用
+            triggerConfig.triggers[strategy] = [false, null];
           }
-
-          processedEntryData.trigger_config = triggerConfig;
         }
 
-        const response = await fetch(`/api/worldbooks/${name}/entries/${uid}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(processedEntryData)
-        });
+        processedEntryData.trigger_config = triggerConfig;
+      }
 
-        const data = await handleResponse(response);
+      const response = await fetch(`/api/worldbooks/${name}/entries/${uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(processedEntryData)
+      });
 
-        set(state => {
-          if (state.currentWorldBook?.name === name) {
-            const updatedEntries = state.currentEntries.map(entry =>
-              entry.uid === data.uid ? data : entry
-            );
+      const data = await handleResponse(response);
 
-            return {
-              loading: false,
-              currentEntries: updatedEntries,
-              currentEntry: state.currentEntry?.uid === data.uid
-                ? data
-                : state.currentEntry,
-              success: true,
-              message: '条目更新成功'
-            };
-          }
+      set(state => {
+        if (state.currentWorldBook?.name === name) {
+          const updatedEntries = state.currentEntries.map(entry =>
+            entry.uid === data.uid ? data : entry
+          );
+
           return {
             loading: false,
+            currentEntries: updatedEntries,
+            currentEntry: state.currentEntry?.uid === data.uid
+              ? data
+              : state.currentEntry,
             success: true,
             message: '条目更新成功'
           };
-        });
-
-        return data;
-      } catch (error) {
-        set({
+        }
+        return {
           loading: false,
-          error: error.message,
-          success: false
-        });
-        throw error;
-      }
-    },
+          success: true,
+          message: '条目更新成功'
+        };
+      });
 
+      return data;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error.message,
+        success: false
+      });
+      throw error;
+    }
+  },
 
   // 异步操作：删除世界书条目
   deleteWorldBookEntry: async (name, uid) => {
@@ -612,6 +634,9 @@ const useWorldBookStore = create((set, get) => ({
             updatedGlobalBooks = [...updatedGlobalBooks, data];
           }
         }
+
+        // 保存到 LocalStorage
+        saveGlobalWorldBooks(updatedGlobalBooks);
 
         return {
           loading: false,

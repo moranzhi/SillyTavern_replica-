@@ -29,70 +29,42 @@ const WorldBook = () => {
     clearSuccess,
   } = useWorldBookStore();
 
-    const [newEntry, setNewEntry] = useState({
-      uid: 0,
-      key: [],
-      keysecondary: [],
-      content: '',
-      comment: '',
-      constant: false,
-      position: 0,
-      order: 100,
-      depth:4,
-      selective: true,
-      selectiveLogic: 0,
-      probability: 100,
-      useProbability: false,
-      role: 0,
-      caseSensitive: false,
-      matchWholeWords: false,
-      useGroupScoring: false,
-      group: '',
-      groupOverride: false,
-      groupWeight: 100,
-      excludeRecursion: true,
-      preventRecursion: true,
-      delayUntilRecursion: false,
-      disable: false,
-      ignoreBudget: false,
-      outletName: '',
-      automationId: '',
-      sticky: 0,
-      cooldown: 0,
-      delay: 0,
-      triggers: [],
-      displayIndex: 0,
-      vectorized: false,
-      // 新的触发配置结构
-      trigger_config: {
-        triggers: {
-          constant: [true, null],
-          keyword: [false, {
-            key: [],
-            keysecondary: [],
-            selective: true,
-            selectiveLogic: 0,
-            matchWholeWords: false,
-            caseSensitive: false
-          }],
-          rag: [false, {
-            threshold: 0.75,
-            top_k: 5,
-            query_template: null
-          }],
-          condition: [false, {
-            variable_a: '',
-            operator: '=',
-            variable_b: ''
-          }]
-        }
+  const [newEntry, setNewEntry] = useState({
+    uid: 0,
+    content: '',
+    comment: '',
+    position: 0,
+    order: 100,
+    depth: 4,
+    role: 0,
+    trigger_config: {
+      triggers: {
+        constant: [true, null],
+        keyword: [false, {
+          key: [],
+          keysecondary: [],
+          selective: true,
+          selectiveLogic: 0,
+          matchWholeWords: false,
+          caseSensitive: false
+        }],
+        rag: [false, {
+          threshold: 0.75,
+          top_k: 5,
+          query_template: null
+        }],
+        condition: [false, {
+          variable_a: '',
+          operator: '=',
+          variable_b: ''
+        }]
       }
-    });
-
+    }
+  });
 
   const [showEditPanel, setShowEditPanel] = useState(false);
   const [showWorldBookDropdown, setShowWorldBookDropdown] = useState(false);
-  const [showGlobalDropdown, setShowGlobalDropdown] = useState(false);
+  const [activeTriggerStrategy, setActiveTriggerStrategy] = useState('constant');
 
   useEffect(() => {
     fetchWorldBooks();
@@ -112,13 +84,26 @@ const WorldBook = () => {
     }
   }, [error, clearError]);
 
+  useEffect(() => {
+    if (currentEntry && currentEntry.trigger_config) {
+      const triggers = currentEntry.trigger_config.triggers;
+      if (triggers.constant[0]) {
+        setActiveTriggerStrategy('constant');
+      } else if (triggers.keyword[0]) {
+        setActiveTriggerStrategy('keyword');
+      } else if (triggers.rag[0]) {
+        setActiveTriggerStrategy('rag');
+      } else if (triggers.condition[0]) {
+        setActiveTriggerStrategy('condition');
+      }
+    }
+  }, [currentEntry]);
+
   const handleCreateWorldBook = async () => {
     const name = prompt('请输入世界书名称:');
-    const description = prompt('请输入世界书描述（可选）:') || '';
     if (name) {
       try {
-        await createWorldBook({ name, description });
-        // 创建成功后自动选择新创建的世界书
+        await createWorldBook({ name });
         const newBook = worldBooks.find(wb => wb.name === name);
         if (newBook) {
           handleSelectWorldBook(newBook);
@@ -147,134 +132,85 @@ const WorldBook = () => {
     }
   };
 
-    const handleAddEntry = async () => {
-      if (!currentWorldBook) return;
+  const handleAddEntry = async () => {
+    if (!currentWorldBook) return;
 
-      // 生成新的UID
-      const maxUid = currentEntries.reduce((max, entry) => Math.max(max, entry.uid), 0);
-      const newUid = maxUid + 1;
+    const maxUid = currentEntries.reduce((max, entry) => Math.max(max, entry.uid), 0);
+    const newUid = maxUid + 1;
 
-      // 处理触发配置数据
-      const triggerConfig = {
-        triggers: {
-          constant: [newEntry.constant, null],
-          keyword: [!newEntry.constant && newEntry.key.length > 0, {
-            key: newEntry.key,
-            keysecondary: newEntry.keysecondary,
-            selective: newEntry.selective,
-            selectiveLogic: newEntry.selectiveLogic,
-            matchWholeWords: newEntry.matchWholeWords,
-            caseSensitive: newEntry.caseSensitive
-          }],
-          rag: [false, {
-            threshold: newEntry.rag_threshold || 0.75,
-            top_k: 5,
-            query_template: null
-          }],
-          condition: [false, {
-            variable_a: '',
-            operator: '=',
-            variable_b: ''
-          }]
-        }
-      };
-
-      const entryData = {
-        uid: newUid,
-        content: newEntry.content,
-        comment: newEntry.comment,
-        position: newEntry.position,
-        order: newEntry.order,
-        depth: newEntry.depth,
-        role: newEntry.role,
-        disable: newEntry.disable,
-        ignoreBudget: newEntry.ignoreBudget,
-        outletName: newEntry.outletName,
-        automationId: newEntry.automationId,
-        sticky: newEntry.sticky,
-        cooldown: newEntry.cooldown,
-        delay: newEntry.delay,
-        triggers: newEntry.triggers,
-        displayIndex: newEntry.displayIndex,
-        vectorized: newEntry.vectorized,
-        useGroupScoring: newEntry.useGroupScoring,
-        group: newEntry.group,
-        groupOverride: newEntry.groupOverride,
-        groupWeight: newEntry.groupWeight,
-        excludeRecursion: newEntry.excludeRecursion,
-        preventRecursion: newEntry.preventRecursion,
-        delayUntilRecursion: newEntry.delayUntilRecursion,
-        probability: newEntry.probability,
-        useProbability: newEntry.useProbability,
-        trigger_config: triggerConfig
-      };
-
-      try {
-        await createWorldBookEntry(currentWorldBook.name, entryData);
-        // 重置新条目表单
-        setNewEntry({
-          uid: 0,
-          key: [],
-          keysecondary: [],
-          content: '',
-          comment: '',
-          constant: false,
-          position: 0,
-          order: 100,
-          depth:4,
-          selective: true,
-          selectiveLogic: 0,
-          probability: 100,
-          useProbability: false,
-          role: 0,
-          caseSensitive: false,
-          matchWholeWords: false,
-          useGroupScoring: false,
-          group: '',
-          groupOverride: false,
-          groupWeight: 100,
-          excludeRecursion: true,
-          preventRecursion: true,
-          delayUntilRecursion: false,
-          disable: false,
-          ignoreBudget: false,
-          outletName: '',
-          automationId: '',
-          sticky: 0,
-          cooldown: 0,
-          delay: 0,
-          triggers: [],
-          displayIndex: 0,
-          vectorized: false,
-          trigger_config: {
-            triggers: {
-              constant: [true, null],
-              keyword: [false, {
-                key: [],
-                keysecondary: [],
-                selective: true,
-                selectiveLogic: 0,
-                matchWholeWords: false,
-                caseSensitive: false
-              }],
-              rag: [false, {
-                threshold: 0.75,
-                top_k: 5,
-                query_template: null
-              }],
-              condition: [false, {
-                variable_a: '',
-                operator: '=',
-                variable_b: ''
-              }]
-            }
-          }
-        });
-      } catch (err) {
-        console.error('添加条目失败:', err);
+    const triggerConfig = {
+      triggers: {
+        constant: [newEntry.trigger_config.triggers.constant[0], null],
+        keyword: [!newEntry.trigger_config.triggers.constant[0] && newEntry.trigger_config.triggers.keyword[1].key.length > 0, {
+          key: newEntry.trigger_config.triggers.keyword[1].key,
+          keysecondary: newEntry.trigger_config.triggers.keyword[1].keysecondary,
+          selective: newEntry.trigger_config.triggers.keyword[1].selective,
+          selectiveLogic: newEntry.trigger_config.triggers.keyword[1].selectiveLogic,
+          matchWholeWords: newEntry.trigger_config.triggers.keyword[1].matchWholeWords,
+          caseSensitive: newEntry.trigger_config.triggers.keyword[1].caseSensitive
+        }],
+        rag: [false, {
+          threshold: 0.75,
+          top_k: 5,
+          query_template: null
+        }],
+        condition: [false, {
+          variable_a: '',
+          operator: '=',
+          variable_b: ''
+        }]
       }
     };
 
+    const entryData = {
+      uid: newUid,
+      content: newEntry.content,
+      comment: newEntry.comment,
+      position: newEntry.position,
+      order: newEntry.order,
+      depth: newEntry.depth,
+      role: newEntry.role,
+      trigger_config: triggerConfig
+    };
+
+    try {
+      await createWorldBookEntry(currentWorldBook.name, entryData);
+      setNewEntry({
+        uid: 0,
+        content: '',
+        comment: '',
+        position: 0,
+        order: 100,
+        depth: 4,
+        role: 0,
+        trigger_config: {
+          triggers: {
+            constant: [true, null],
+            keyword: [false, {
+              key: [],
+              keysecondary: [],
+              selective: true,
+              selectiveLogic: 0,
+              matchWholeWords: false,
+              caseSensitive: false
+            }],
+            rag: [false, {
+              threshold: 0.75,
+              top_k: 5,
+              query_template: null
+            }],
+            condition: [false, {
+              variable_a: '',
+              operator: '=',
+              variable_b: ''
+            }]
+          }
+        }
+      });
+    } catch (err) {
+      console.error('添加条目失败:', err);
+    }
+  };
 
   const handleEntryClick = (entry) => {
     setCurrentEntry(entry);
@@ -290,6 +226,58 @@ const WorldBook = () => {
       setCurrentEntry(updatedEntry);
     } catch (err) {
       console.error('更新条目失败:', err);
+    }
+  };
+
+  const handleTriggerStrategyChange = async (strategy) => {
+    if (!currentEntry || !currentWorldBook) return;
+
+    setActiveTriggerStrategy(strategy);
+
+    const updatedTriggers = {
+      constant: [false, null],
+      keyword: [false, {
+        key: [],
+        keysecondary: [],
+        selective: true,
+        selectiveLogic: 0,
+        matchWholeWords: false,
+        caseSensitive: false
+      }],
+      rag: [false, {
+        threshold: 0.75,
+        top_k: 5,
+        query_template: null
+      }],
+      condition: [false, {
+        variable_a: '',
+        operator: '=',
+        variable_b: ''
+      }]
+    };
+
+    if (strategy !== 'constant') {
+      updatedTriggers[strategy][0] = true;
+    } else {
+      updatedTriggers.constant[0] = true;
+    }
+
+    const updatedTriggerConfig = {
+      ...currentEntry.trigger_config,
+      triggers: updatedTriggers
+    };
+
+    try {
+      await updateWorldBookEntry(currentWorldBook.name, currentEntry.uid, {
+        ...currentEntry,
+        trigger_config: updatedTriggerConfig
+      });
+      setCurrentEntry({
+        ...currentEntry,
+        trigger_config: updatedTriggerConfig
+      });
+    } catch (err) {
+      console.error('更新触发策略失败:', err);
     }
   };
 
@@ -334,7 +322,6 @@ const WorldBook = () => {
       try {
         await useWorldBookStore.getState().importWorldBook(name, file);
         await fetchWorldBooks();
-        // 导入成功后选择新导入的世界书
         const importedBook = worldBooks.find(wb => wb.name === name);
         if (importedBook) {
           handleSelectWorldBook(importedBook);
@@ -356,11 +343,22 @@ const WorldBook = () => {
     }
   };
 
+  const getPositionInfo = (position) => {
+    const positions = {
+      0: { label: '角色定义之后', weight: '高', desc: 'AI读完人设紧接着就读到这里，非常适合补充角色的详细设定、性格细节或特殊规则' },
+      1: { label: '角色定义之前', weight: '中', desc: '在角色卡内容的最上方，通常用于定义角色的基础背景，让人设部分来解释这些背景' },
+      2: { label: '示例对话之前', weight: '低', desc: '在对话示例的最上方' },
+      3: { label: '示例对话之后', weight: '低', desc: '用于在对话开始前提供最后的上下文补充' },
+      4: { label: '系统提示/作者注释', weight: '极高', desc: 'AI对最近看到的信息记忆最清晰，适合动态信息、当前场景描述或临时规则' },
+      5: { label: '作为系统消息', weight: '最高', desc: '强制作为System Prompt插入，通常用于强制指令' }
+    };
+    return positions[position] || positions[0];
+  };
+
   return (
     <div className="worldbook-content">
       {/* 全局世界书区域 */}
       <div className="worldbook-selector-section">
-        {/* 全局世界书展示区域 */}
         <div className="global-books-display">
           <div className="global-books-header">
             <span className="title-text">全局世界书</span>
@@ -423,7 +421,6 @@ const WorldBook = () => {
                       key={book.name}
                       className={`dropdown-item ${currentWorldBook?.name === book.name ? 'active' : ''}`}
                       onClick={(e) => {
-                        // 防止点击复选框时触发选择世界书
                         if (e.target.type !== 'checkbox') {
                           handleSelectWorldBook(book);
                         }
@@ -432,16 +429,13 @@ const WorldBook = () => {
                       <label className="checkbox-label">
                         <input
                           type="checkbox"
-                          checked={book.is_global}
+                          checked={globalWorldBooks.some(wb => wb.name === book.name)}
                           onChange={(e) => {
                             e.stopPropagation();
                             handleToggleGlobal(book.name, e.target.checked);
                           }}
                         />
                         <span className="book-name">{book.name}</span>
-                        {book.description && (
-                          <span className="book-desc">{book.description}</span>
-                        )}
                       </label>
                     </div>
                   ))}
@@ -464,8 +458,7 @@ const WorldBook = () => {
           ) : error ? (
             <div className="error">{error}</div>
           ) : currentWorldBook ? (
-            <div className="entries-container" style={{ maxHeight: 'calc(100vh - 400px)', overflowY: 'auto' }}>
-
+            <div className="entries-container">
               {currentEntries.length > 0 ? (
                 currentEntries.map(entry => (
                   <div
@@ -477,14 +470,27 @@ const WorldBook = () => {
                       <span className="entry-name">
                         {entry.comment || `条目 #${entry.uid}`}
                       </span>
-                      <span className={`entry-status ${!entry.disable ? 'enabled' : ''}`}>
-                        {!entry.disable ? '启用' : '禁用'}
+                      <span className="entry-status">
+                        {entry.trigger_config.triggers.constant[0] ? '常驻' : '触发'}
                       </span>
                     </div>
-                    <div className="entry-meta">
-                      <span>策略: {entry.trigger_strategy}</span>
-                      <span>位置: {entry.position}</span>
-                      <span>顺序: {entry.order}</span>
+                    <div className="compact-params">
+                      <div className="param-item">
+                        <span className="param-label">位置:</span>
+                        <span className="param-value">{getPositionInfo(entry.position).label}</span>
+                      </div>
+                      <div className="param-item">
+                        <span className="param-label">权重:</span>
+                        <span className="param-value">{getPositionInfo(entry.position).weight}</span>
+                      </div>
+                      <div className="param-item">
+                        <span className="param-label">顺序:</span>
+                        <span className="param-value">{entry.order}</span>
+                      </div>
+                      <div className="param-item">
+                        <span className="param-label">深度:</span>
+                        <span className="param-value">{entry.depth}</span>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -511,190 +517,412 @@ const WorldBook = () => {
             </button>
           </div>
 
-                    <div className="form-group">
-                      <label className="form-label">主关键词</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={currentEntry.trigger_config?.triggers?.keyword?.[1]?.key?.join(', ') || ''}
-                        onChange={(e) => {
-                          const updatedTriggerConfig = {
-                            ...currentEntry.trigger_config,
-                            triggers: {
-                              ...currentEntry.trigger_config?.triggers,
-                              keyword: [
-                                currentEntry.trigger_config?.triggers?.keyword?.[0] || false,
-                                {
-                                  ...currentEntry.trigger_config?.triggers?.keyword?.[1],
-                                  key: e.target.value.split(',').map(k => k.trim())
-                                }
-                              ]
-                            }
-                          };
-                          handleEntryUpdate('trigger_config', updatedTriggerConfig);
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">次要关键词</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={currentEntry.trigger_config?.triggers?.keyword?.[1]?.keysecondary?.join(', ') || ''}
-                        onChange={(e) => {
-                          const updatedTriggerConfig = {
-                            ...currentEntry.trigger_config,
-                            triggers: {
-                              ...currentEntry.trigger_config?.triggers,
-                              keyword: [
-                                currentEntry.trigger_config?.triggers?.keyword?.[0] || false,
-                                {
-                                  ...currentEntry.trigger_config?.triggers?.keyword?.[1],
-                                  keysecondary: e.target.value.split(',').map(k => k.trim())
-                                }
-                              ]
-                            }
-                          };
-                          handleEntryUpdate('trigger_config', updatedTriggerConfig);
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">
-                        <input
-                          type="checkbox"
-                          checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.selective || false}
-                          onChange={(e) => {
-                            const updatedTriggerConfig = {
-                              ...currentEntry.trigger_config,
-                              triggers: {
-                                ...currentEntry.trigger_config?.triggers,
-                                keyword: [
-                                  currentEntry.trigger_config?.triggers?.keyword?.[0] || false,
-                                  {
-                                    ...currentEntry.trigger_config?.triggers?.keyword?.[1],
-                                    selective: e.target.checked
-                                  }
-                                ]
-                              }
-                            };
-                            handleEntryUpdate('trigger_config', updatedTriggerConfig);
-                          }}
-                        />
-                        选择性匹配
-                      </label>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">
-                        <input
-                          type="checkbox"
-                          checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.matchWholeWords || false}
-                          onChange={(e) => {
-                            const updatedTriggerConfig = {
-                              ...currentEntry.trigger_config,
-                              triggers: {
-                                ...currentEntry.trigger_config?.triggers,
-                                keyword: [
-                                  currentEntry.trigger_config?.triggers?.keyword?.[0] || false,
-                                  {
-                                    ...currentEntry.trigger_config?.triggers?.keyword?.[1],
-                                    matchWholeWords: e.target.checked
-                                  }
-                                ]
-                              }
-                            };
-                            handleEntryUpdate('trigger_config', updatedTriggerConfig);
-                          }}
-                        />
-                        全词匹配
-                      </label>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">
-                        <input
-                          type="checkbox"
-                          checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.caseSensitive || false}
-                          onChange={(e) => {
-                            const updatedTriggerConfig = {
-                              ...currentEntry.trigger_config,
-                              triggers: {
-                                ...currentEntry.trigger_config?.triggers,
-                                keyword: [
-                                  currentEntry.trigger_config?.triggers?.keyword?.[0] || false,
-                                  {
-                                    ...currentEntry.trigger_config?.triggers?.keyword?.[1],
-                                    caseSensitive: e.target.checked
-                                  }
-                                ]
-                              }
-                            };
-                            handleEntryUpdate('trigger_config', updatedTriggerConfig);
-                          }}
-                        />
-                        区分大小写
-                      </label>
-                    </div>
-
-
           <div className="form-group">
-            <label className="form-label">
-              <input
-                type="checkbox"
-                checked={currentEntry.useProbability}
-                onChange={(e) => handleEntryUpdate('useProbability', e.target.checked)}
-              />
-              使用概率判定
-            </label>
-          </div>
-
-          {currentEntry.useProbability && (
-            <div className="form-group">
-              <label className="form-label">触发概率 (%)</label>
-              <input
-                type="number"
-                className="form-input"
-                min="0"
-                max="100"
-                value={currentEntry.probability}
-                onChange={(e) => handleEntryUpdate('probability', parseInt(e.target.value))}
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label className="form-label">分组</label>
+            <label className="form-label">条目名称</label>
             <input
               type="text"
               className="form-input"
-              value={currentEntry.group || ''}
-              onChange={(e) => handleEntryUpdate('group', e.target.value)}
+              value={currentEntry.comment || ''}
+              onChange={(e) => handleEntryUpdate('comment', e.target.value)}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">分组权重</label>
+            <label className="form-label">内容</label>
+            <textarea
+              className="form-input"
+              value={currentEntry.content || ''}
+              onChange={(e) => handleEntryUpdate('content', e.target.value)}
+              rows={10}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">插入位置</label>
+            <div className="position-selector">
+              {[0, 1, 2, 3, 4, 5].map(pos => {
+                const info = getPositionInfo(pos);
+                return (
+                  <div
+                    key={pos}
+                    className={`position-option ${currentEntry.position === pos ? 'active' : ''}`}
+                    onClick={() => handleEntryUpdate('position', pos)}
+                  >
+                    <div className="position-tooltip" data-tooltip={info.desc}>
+                      <span className="position-label">{info.label}</span>
+                      <span className="position-weight">{info.weight}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">顺序权重</label>
             <input
               type="number"
               className="form-input"
-              value={currentEntry.groupWeight}
-              onChange={(e) => handleEntryUpdate('groupWeight', parseInt(e.target.value))}
+              value={currentEntry.order || 100}
+              onChange={(e) => handleEntryUpdate('order', parseInt(e.target.value))}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">
-              <input
-                type="checkbox"
-                checked={currentEntry.groupOverride}
-                onChange={(e) => handleEntryUpdate('groupOverride', e.target.checked)}
-              />
-              覆盖分组限制
-            </label>
+            <label className="form-label">扫描深度</label>
+            <input
+              type="number"
+              className="form-input"
+              value={currentEntry.depth || 4}
+              onChange={(e) => handleEntryUpdate('depth', parseInt(e.target.value))}
+            />
           </div>
+
+          <div className="form-group">
+            <label className="form-label">角色匹配</label>
+            <select
+              className="form-input"
+              value={currentEntry.role || 0}
+              onChange={(e) => handleEntryUpdate('role', parseInt(e.target.value))}
+            >
+              <option value={0}>Both</option>
+              <option value={1}>User</option>
+              <option value={2}>Assistant</option>
+            </select>
+          </div>
+
+          {/* 触发策略选择器 */}
+          <div className="form-group">
+            <label className="form-label">触发策略</label>
+            <div className="trigger-strategy-selector">
+              <button
+                className={`trigger-strategy-btn ${activeTriggerStrategy === 'constant' ? 'active' : ''}`}
+                onClick={() => handleTriggerStrategyChange('constant')}
+              >
+                常驻触发
+              </button>
+              <button
+                className={`trigger-strategy-btn ${activeTriggerStrategy === 'keyword' ? 'active' : ''}`}
+                onClick={() => handleTriggerStrategyChange('keyword')}
+              >
+                关键词触发
+              </button>
+              <button
+                className={`trigger-strategy-btn ${activeTriggerStrategy === 'rag' ? 'active' : ''}`}
+                onClick={() => handleTriggerStrategyChange('rag')}
+              >
+                RAG触发
+              </button>
+              <button
+                className={`trigger-strategy-btn ${activeTriggerStrategy === 'condition' ? 'active' : ''}`}
+                onClick={() => handleTriggerStrategyChange('condition')}
+              >
+                条件触发
+              </button>
+            </div>
+          </div>
+
+          {/* 根据选择的触发策略显示对应的配置表单 */}
+          {activeTriggerStrategy === 'keyword' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">主关键词</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.keyword?.[1]?.key?.join(', ') || ''}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        keyword: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.keyword?.[1],
+                            key: e.target.value.split(',').map(k => k.trim())
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">次要关键词</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.keyword?.[1]?.keysecondary?.join(', ') || ''}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        keyword: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.keyword?.[1],
+                            keysecondary: e.target.value.split(',').map(k => k.trim())
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <input
+                    type="checkbox"
+                    checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.selective || false}
+                    onChange={(e) => {
+                      const updatedTriggerConfig = {
+                        ...currentEntry.trigger_config,
+                        triggers: {
+                          ...currentEntry.trigger_config?.triggers,
+                          keyword: [
+                            true,
+                            {
+                              ...currentEntry.trigger_config?.triggers?.keyword?.[1],
+                              selective: e.target.checked
+                            }
+                          ]
+                        }
+                      };
+                      handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                    }}
+                  />
+                  选择性匹配
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <input
+                    type="checkbox"
+                    checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.matchWholeWords || false}
+                    onChange={(e) => {
+                      const updatedTriggerConfig = {
+                        ...currentEntry.trigger_config,
+                        triggers: {
+                          ...currentEntry.trigger_config?.triggers,
+                          keyword: [
+                            true,
+                            {
+                              ...currentEntry.trigger_config?.triggers?.keyword?.[1],
+                              matchWholeWords: e.target.checked
+                            }
+                          ]
+                        }
+                      };
+                      handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                    }}
+                  />
+                  全词匹配
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  <input
+                    type="checkbox"
+                    checked={currentEntry.trigger_config?.triggers?.keyword?.[1]?.caseSensitive || false}
+                    onChange={(e) => {
+                      const updatedTriggerConfig = {
+                        ...currentEntry.trigger_config,
+                        triggers: {
+                          ...currentEntry.trigger_config?.triggers,
+                          keyword: [
+                            true,
+                            {
+                              ...currentEntry.trigger_config?.triggers?.keyword?.[1],
+                              caseSensitive: e.target.checked
+                            }
+                          ]
+                        }
+                      };
+                      handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                    }}
+                  />
+                  区分大小写
+                </label>
+              </div>
+            </>
+          )}
+
+          {activeTriggerStrategy === 'rag' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">相似度阈值</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="1"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.rag?.[1]?.threshold || 0.75}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        rag: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.rag?.[1],
+                            threshold: parseFloat(e.target.value)
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">返回条目数</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.rag?.[1]?.top_k || 5}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        rag: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.rag?.[1],
+                            top_k: parseInt(e.target.value)
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">查询模板</label>
+                <textarea
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.rag?.[1]?.query_template || ''}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        rag: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.rag?.[1],
+                            query_template: e.target.value
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                  rows={3}
+                />
+              </div>
+            </>
+          )}
+
+          {activeTriggerStrategy === 'condition' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">变量A</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.condition?.[1]?.variable_a || ''}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        condition: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.condition?.[1],
+                            variable_a: e.target.value
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">运算符</label>
+                <select
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.condition?.[1]?.operator || '='}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        condition: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.condition?.[1],
+                            operator: e.target.value
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                >
+                  <option value="等于">等于</option>
+                  <option value="大于">大于</option>
+                  <option value="小于">小于</option>
+                  <option value="不小于">不小于</option>
+                  <option value="不大于">不大于</option>
+                  <option value="不等于">不等于</option>
+                  <option value="包括">包括</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">变量B</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={currentEntry.trigger_config?.triggers?.condition?.[1]?.variable_b || ''}
+                  onChange={(e) => {
+                    const updatedTriggerConfig = {
+                      ...currentEntry.trigger_config,
+                      triggers: {
+                        ...currentEntry.trigger_config?.triggers,
+                        condition: [
+                          true,
+                          {
+                            ...currentEntry.trigger_config?.triggers?.condition?.[1],
+                            variable_b: e.target.value
+                          }
+                        ]
+                      }
+                    };
+                    handleEntryUpdate('trigger_config', updatedTriggerConfig);
+                  }}
+                />
+              </div>
+            </>
+          )}
 
           <button
             className="btn btn-danger"
