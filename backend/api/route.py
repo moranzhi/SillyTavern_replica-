@@ -1,5 +1,8 @@
 from fastapi import APIRouter
 from .routes import presetsRoute, chatsRoute, worldbooksRoute
+from utils.file_utils import get_all_roles_and_chats
+from core.config import settings
+from pathlib import Path
 
 router = APIRouter()
 
@@ -12,5 +15,4 @@ router.include_router(worldbooksRoute.router)
 # 保留原有的其他路由
 @router.get("/tool_bar/get_all_role_and_chat")
 def get_all_role_and_chat_endpoint():
-	from ..tools.get_all_role_and_chat import get_all_role_and_chat
-	return get_all_role_and_chat()
+	return get_all_roles_and_chats(Path(settings.DATA_PATH))

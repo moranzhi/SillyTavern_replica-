@@ -4,6 +4,10 @@ FROM python:3.11-slim
 # 设置工作目录
 WORKDIR /app
 
+# 设置环境变量
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
 # 复制依赖文件
 COPY requirements.txt .
 
@@ -11,13 +15,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 # 复制所有代码
-# 修改点：把当前目录（即 backend/）的内容复制到 /app/backend/ 下
-# 这样镜像内的结构就是 /app/backend/api/route.py
-COPY . /app/backend/
+COPY . .
 
 # 暴露端口
 EXPOSE 8000
 
 # 启动命令
-# 修改点：路径改为 backend.api.route (对应 /app/backend/api/route.py)
-CMD ["uvicorn", "backend.api.route:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
