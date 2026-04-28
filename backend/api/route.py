@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routes import presetsRoute, chatsRoute, worldbooksRoute
+from .routes import presetsRoute, chatsRoute, worldbooksRoute, apiConfigRoute
 from utils.file_utils import get_all_roles_and_chats
 from core.config import settings
 from pathlib import Path
@@ -10,6 +10,7 @@ router = APIRouter()
 router.include_router(presetsRoute.router)
 router.include_router(chatsRoute.router)
 router.include_router(worldbooksRoute.router)
+router.include_router(apiConfigRoute.router)
 
 
 # 保留原有的其他路由
