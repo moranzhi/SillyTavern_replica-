@@ -52,6 +52,9 @@ class Settings:
 	# 临时文件目录
 	TEMP_PATH = DATA_PATH / "temp"
 
+	# ComfyUI 工作流目录
+	COMFYUI_WORKFLOWS_PATH = DATA_PATH / "comfyui_workflows"
+
 	def ensure_directories(self):
 		"""确保所有配置的目录存在，如果不存在则创建"""
 		directories = [
@@ -60,6 +63,7 @@ class Settings:
 			self.PRESET_PATH,
 			self.CHAT_PATH,
 			self.TEMP_PATH,
+			self.COMFYUI_WORKFLOWS_PATH,
 		]
 		for directory in directories:
 			directory.mkdir(parents=True, exist_ok=True)

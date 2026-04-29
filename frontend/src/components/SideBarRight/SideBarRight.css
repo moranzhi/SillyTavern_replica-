@@ -1,0 +1,163 @@
+.sidebar-right {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background-color: var(--color-bg-tertiary);
+  padding: 0 var(--spacing-sm);
+}
+
+.tab-button {
+  flex: 1;
+  padding: var(--spacing-md) var(--spacing-sm);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.tab-button:hover {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+.tab-button.active {
+  color: var(--color-accent);
+  font-weight: 600;
+  border-bottom-color: var(--color-accent);
+  background: var(--color-accent-ultra-light);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.panel-section {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 当有两个页面时，第一个页面添加底部分隔线 */
+.panel-section.has-divider {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* 当只有一个页面选中时，占据全部空间 */
+.panel-section:only-child {
+  flex: 1;
+}
+
+.tab-content {
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+/* 分割线样式 */
+.resize-handle {
+  height: 8px;
+  background-color: var(--color-bg-tertiary);
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  cursor: row-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.resize-handle:hover {
+  background-color: var(--color-accent-light);
+}
+
+.resize-handle.dragging {
+  background-color: var(--color-accent);
+}
+
+.resize-handle-line {
+  width: 40px;
+  height: 2px;
+  background-color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.resize-handle:hover .resize-handle-line {
+  width: 60px;
+  background-color: var(--color-accent);
+}
+
+.resize-handle.dragging .resize-handle-line {
+  width: 80px;
+  background-color: white;
+}
+
+/* 上下分割的内容区域 */
+.split-top,
+.split-bottom {
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+/* 未选择分页提示 */
+.no-tabs-selected {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.tab-content:last-child {
+  border-bottom: none;
+}
+
+/* Tab placeholder for empty states */
+.tab-placeholder {
+  padding: var(--spacing-lg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.tab-placeholder h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.tab-placeholder p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}

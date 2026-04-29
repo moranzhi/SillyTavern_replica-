@@ -1,0 +1,150 @@
+/* CSS Variables - Elegant Dark/Light Theme */
+:root {
+  /* Colors - Dark Theme (Default) - Material Design inspired */
+  /* Background layers - using deep grays, not pure black */
+  --color-bg-primary: #121212;      /* 主背景 - 深灰黑 */
+  --color-bg-secondary: #1e1e1e;    /* 次级背景 - 中灰黑 */
+  --color-bg-tertiary: #2d2d2d;     /* 三级背景 - 浅灰黑 */
+  --color-bg-elevated: #252525;     /* 浮层背景 */
+  --color-bg-subtle: #1a1a1a;       /* 微妙背景 */
+  
+  /* Text colors - softer whites for better readability */
+  --color-text-primary: #e0e0e0;    /* 主文字 - 柔白 */
+  --color-text-secondary: #9e9e9e;  /* 次要文字 - 中灰 */
+  --color-text-muted: #757575;      /* 弱化文字 - 深灰 */
+  --color-text-inverse: #121212;    /* 反色文字 */
+  
+  /* Border colors - subtle separation */
+  --color-border: #333333;          /* 边框 - 深灰 */
+  --color-border-light: #2a2a2a;    /* 浅色边框 */
+  --color-border-focus: #404040;    /* 聚焦边框 */
+  
+  /* Scrollbar colors - Light gray for night mode */
+  --color-scrollbar: #666666;       /* 滚动条 - 亮灰色 */
+  --color-scrollbar-hover: #888888; /* 滚动条悬停 - 更亮的灰色 */
+  
+  /* Accent color - elegant blue-purple */
+  --color-accent: #8b9cf7;          /* 强调色 - 柔和蓝紫 */
+  --color-accent-hover: #9dabff;    /* 悬停 */
+  --color-accent-active: #7a8be6;   /* 激活 */
+  --color-accent-light: rgba(139, 156, 247, 0.1);    /* 浅色强调 */
+  --color-accent-ultra-light: rgba(139, 156, 247, 0.05);  /* 极浅强调 */
+  
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* Danger colors */
+  --color-danger: #ef4444;
+  --color-danger-light: rgba(239, 68, 68, 0.1);
+  --color-danger-dark: #dc2626;
+  
+  /* Accent variations */
+  --color-accent-dark: #6d7de6;
+  
+  /* Gradient backgrounds */
+  --gradient-primary: linear-gradient(135deg, #6d8cff 0%, #8da7ff 100%);
+  --gradient-subtle: linear-gradient(180deg, rgba(109, 140, 255, 0.05) 0%, transparent 100%);
+  
+  /* Spacing - Compact but comfortable */
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 12px;
+  --spacing-lg: 18px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 40px;
+  
+  /* Border Radius - Softer, more refined */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Shadows - Subtle and layered for depth */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.35), 0 6px 12px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.35);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  
+  /* Transitions - Smooth and elegant */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-smooth: 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* Z-index layers */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* Global theme transition */
+*, *::before, *::after {
+  transition: background-color var(--transition-normal), 
+              border-color var(--transition-normal), 
+              color var(--transition-normal),
+              box-shadow var(--transition-normal);
+}
+
+/* Light Theme - Soft and natural day mode */
+[data-theme='light'] {
+  /* Background layers - warm whites, not harsh white */
+  --color-bg-primary: #fafafa;      /* 主背景 - 暖白 */
+  --color-bg-secondary: #ffffff;    /* 次级背景 - 纯白 */
+  --color-bg-tertiary: #f5f5f5;     /* 三级背景 - 浅灰 */
+  --color-bg-elevated: #ffffff;     /* 浮层背景 */
+  --color-bg-subtle: #f0f0f0;       /* 微妙背景 */
+  
+  /* Text colors - soft grays for comfortable reading */
+  --color-text-primary: #2c2c2c;    /* 主文字 - 深灰 */
+  --color-text-secondary: #666666;  /* 次要文字 - 中灰 */
+  --color-text-muted: #999999;      /* 弱化文字 - 浅灰 */
+  --color-text-inverse: #ffffff;    /* 反色文字 */
+  
+  /* Border colors - subtle separation */
+  --color-border: #e0e0e0;          /* 边框 - 浅灰 */
+  --color-border-light: #ebebeb;    /* 浅色边框 */
+  --color-border-focus: #d0d0d0;    /* 聚焦边框 */
+  
+  /* Scrollbar colors - Slightly darker for day mode */
+  --color-scrollbar: #999999;       /* 滚动条 - 中灰色 */
+  --color-scrollbar-hover: #777777; /* 滚动条悬停 - 深灰色 */
+  
+  /* Accent color - consistent with dark theme */
+  --color-accent: #7a8be6;          /* 强调色 */
+  --color-accent-hover: #6a7bd6;    /* 悬停 */
+  --color-accent-active: #5a6bc6;   /* 激活 */
+  --color-accent-light: rgba(122, 139, 230, 0.08);    /* 浅色强调 */
+  --color-accent-ultra-light: rgba(122, 139, 230, 0.04);  /* 极浅强调 */
+  
+  --gradient-primary: linear-gradient(135deg, #5b7fff 0%, #7c9cff 100%);
+  --gradient-subtle: linear-gradient(180deg, rgba(91, 127, 255, 0.03) 0%, transparent 100%);
+  
+  /* Danger colors - Light theme */
+  --color-danger: #ef4444;
+  --color-danger-light: rgba(239, 68, 68, 0.08);
+  --color-danger-dark: #dc2626;
+  
+  /* Accent variations - Light theme */
+  --color-accent-dark: #6a7bd6;
+  
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.07), 0 6px 12px rgba(0, 0, 0, 0.05);
+  --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.08), 0 10px 20px rgba(0, 0, 0, 0.06);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+}

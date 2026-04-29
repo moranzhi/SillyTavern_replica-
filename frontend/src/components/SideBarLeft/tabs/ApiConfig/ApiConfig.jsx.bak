@@ -1,0 +1,482 @@
+// frontend-react/src/components/SideBarLeft/tabs/ApiConfig/ApiConfig.jsx
+import React, { useEffect, useState } from 'react';
+import useApiConfigStore from '../../../../Store/SideBarLeft/ApiConfigSlice';
+import './ApiConfig.css';
+
+const ApiConfig = () => {
+  // 从store中获取状态和方法
+  const {
+    profiles, // 所有配置文件列表
+    currentProfile, // 当前加载的配置文件
+    activeMap, // 激活配置映射 { category: profileId }
+    loading,
+    error,
+    fetchProfiles, // 获取所有配置文件列表
+    fetchProfile, // 获取单个配置文件
+    saveProfile, // 保存配置文件（批量）
+    deleteProfile, // 删除配置文件
+    setActiveConfig, // 设置激活配置
+    testConnection, // 测试连接
+    notification
+  } = useApiConfigStore();
+
+  // 本地表单状态 - 包含 4 个 API 配置
+  const [formData, setFormData] = useState({
+    mainLLM: {
+      id: '',
+      name: '',
+      apiUrl: '',
+      apiKey: '',
+      model: '',
+    },
+    imageModel: {
+      id: '',
+      name: '',
+      apiUrl: '',
+      apiKey: '',
+      model: '',
+    },
+    secondaryLLM: {
+      id: '',
+      name: '',
+      apiUrl: '',
+      apiKey: '',
+      model: '',
+    },
+    ragEmbedding: {
+      id: '',
+      name: '',
+      apiUrl: '',
+      apiKey: '',
+      model: '',
+    }
+  });
+
+  // 当前选中的配置文件 ID
+  const [selectedProfileId, setSelectedProfileId] = useState('');
+  
+  // 当前编辑的类别
+  const [currentCategory, setCurrentCategory] = useState('mainLLM');
+  
+  // 可用模型列表
+  const [availableModels, setAvailableModels] = useState([]);
+  
+  // 显示保存对话框
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  
+  // 要保存的 API 类别（勾选状态）
+  const [apisToSave, setApisToSave] = useState({
+    mainLLM: false,
+    imageModel: false,
+    secondaryLLM: false,
+    ragEmbedding: false
+  });
+  
+  // 跟踪哪些 API 有修改
+  const [modifiedApis, setModifiedApis] = useState({});
+
+  // 组件加载时获取配置文件列表
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
+
+  // 当选中配置文件时，加载该配置
+  useEffect(() => {
+    if (selectedProfileId) {
+      loadProfile(selectedProfileId);
+    }
+  }, [selectedProfileId]);
+
+  // 加载配置文件
+  const loadProfile = async (profileId) => {
+    try {
+      const profile = await fetchProfile(profileId);
+      
+      // 合并到本地状态（服务器提供的覆盖，未提供的保留本地）
+      setFormData(prev => ({
+        ...prev,
+        ...profile.apis  // 只覆盖服务器返回的 API
+      }));
+      
+      // 清除修改标记
+      setModifiedApis({});
+    } catch (err) {
+      console.error('加载配置文件失败:', err);
+    }
+  };
+
+  // 处理输入变化
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    setFormData(prev => ({
+      ...prev,
+      [currentCategory]: {
+        ...prev[currentCategory],
+        [name]: value
+      }
+    }));
+    
+    // 标记当前类别的 API 已被修改
+    setModifiedApis(prev => ({
+      ...prev,
+      [currentCategory]: true
+    }));
+  };
+
+  // 处理类别切换
+  const handleTabChange = (categoryId) => {
+    setCurrentCategory(categoryId);
+    setAvailableModels([]);  // 清空模型列表
+  };
+
+  // 打开保存对话框
+  const handleOpenSaveModal = () => {
+    // 默认选中所有有修改的 API
+    setApisToSave(modifiedApis);
+    setShowSaveModal(true);
+  };
+
+  // 处理保存配置文件
+  const handleSave = async () => {
+    if (!selectedProfileId && !formData[currentCategory].name) {
+      alert('请先输入配置文件名称');
+      return;
+    }
+
+    // 收集要保存的 API 配置
+    const apisToSaveData = {};
+    Object.keys(apisToSave).forEach(category => {
+      if (apisToSave[category]) {
+        apisToSaveData[category] = formData[category];
+      }
+    });
+
+    if (Object.keys(apisToSaveData).length === 0) {
+      alert('请至少选择一个 API 配置进行保存');
+      return;
+    }
+
+    const profileId = selectedProfileId || `profile-${Date.now()}`;
+    const profileName = formData[currentCategory].name || profileId;
+
+    try {
+      await saveProfile(profileId, profileName, apisToSaveData);
+      setSelectedProfileId(profileId);
+      setShowSaveModal(false);
+      
+      // 清除修改标记
+      setModifiedApis(prev => {
+        const newModified = { ...prev };
+        Object.keys(apisToSave).forEach(category => {
+          if (apisToSave[category]) {
+            delete newModified[category];
+          }
+        });
+        return newModified;
+      });
+    } catch (err) {
+      console.error('保存失败:', err);
+    }
+  };
+
+  // 处理重置 (重置为当前激活配置)
+  const handleReset = () => {
+    loadActiveConfig();
+  };
+
+  // 新增：处理连接测试并获取模型列表
+  const handleConnect = async () => {
+    if (!formData.apiUrl || !formData.apiKey) {
+      alert('请先填写 API URL 和 API Key');
+      return;
+    }
+    try {
+      const models = await fetchModels(formData.apiUrl, formData.apiKey, formData.category);
+      setAvailableModels(models);
+      if (models.length === 0) {
+        alert('未找到可用模型');
+      } else {
+        showNotification('success', `成功获取 ${models.length} 个模型`);
+      }
+    } catch (err) {
+      alert('连接失败: ' + err.message);
+    }
+  };
+
+  // 新增：处理模型选择
+  const handleModelSelect = (selectedModel) => {
+    setFormData(prev => ({ ...prev, model: selectedModel }));
+  };
+
+
+  // 处理从列表中选择配置
+  const handleSelectProfile = async (e) => {
+    const profileId = e.target.value;
+    setSelectedProfileId(profileId);
+
+    if (profileId) {
+      const profile = allApis.find(api => api.id === profileId);
+      if (profile) {
+        setFormData({ ...profile });
+        // 自动设置为当前激活配置
+        await setActiveConfig(formData.category, profileId);
+      }
+    } else {
+      // 如果选择了空，清空表单但保留 category
+      setFormData(prev => ({
+        ...prev,
+        id: '',
+        name: '',
+        apiUrl: '',
+        apiKey: '',
+        model: '',
+        temperature: 0.7,
+        maxTokens: 2048,
+        systemPrompt: ''
+      }));
+    }
+  };
+
+  // 处理新建配置
+  const handleCreateNew = () => {
+    setFormData(prev => ({
+      ...prev,
+      id: '',
+      name: `新配置 ${new Date().toLocaleTimeString()}`,
+      apiUrl: '',
+      apiKey: '',
+      model: ''
+    }));
+    setSelectedProfileId('');
+  };
+
+  // 处理删除配置
+  const handleDelete = async () => {
+    if (selectedProfileId && confirm('确定要删除此配置吗？')) {
+      await deleteApiConfig(selectedProfileId);
+      // 删除后重置表单
+      if (selectedProfileId === activeMap[formData.category]) {
+        // 如果删除的是当前激活的配置，重置
+        handleReset();
+      } else {
+        // 否则只清空选中状态
+        setSelectedProfileId('');
+      }
+    }
+  };
+
+  // 处理设为当前激活配置
+  const handleSetActive = async () => {
+    if (!formData.id) {
+      alert('请先保存配置');
+      return;
+    }
+    await setActiveConfig(formData.category, formData.id);
+  };
+
+  // 过滤出当前类别的配置列表
+  const currentCategoryProfiles = allApis.filter(api => api.category === formData.category);
+
+  // 配置区域标签
+  const configTabs = [
+    { id: 'mainLLM', label: '主LLM模型' },
+    { id: 'imageModel', label: '生图模型' },
+    { id: 'secondaryLLM', label: '副LLM模型' },
+    { id: 'ragEmbedding', label: 'RAG嵌入模型' }
+  ];
+
+  // 判断API密钥是否是脱敏的
+  const isApiKeyMasked = formData.apiKey && formData.apiKey.endsWith('****');
+
+  return (
+    <div className="api-config-container">
+      <h2 className="api-config-title">API配置</h2>
+
+      {error && <div className="notification notification-error">{error}</div>}
+      {notification.show && (
+        <div className={`notification notification-${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+
+      <div className="api-config-form">
+        {/* 配置区域标签 */}
+        <div className="config-tabs">
+          {configTabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`config-tab ${formData.category === tab.id ? 'active' : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 配置管理区域 - 整合选择和操作 */}
+        <div className="profile-manager">
+          <div className="profile-header">
+            <label htmlFor="profileSelect">配置方案</label>
+            <div className="profile-controls">
+              <select
+                id="profileSelect"
+                value={selectedProfileId}
+                onChange={handleSelectProfile}
+                className="form-control profile-select-input"
+              >
+                <option value="">新建配置...</option>
+                {currentCategoryProfiles.map(profile => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name} {activeMap[formData.category] === profile.id ? '●' : ''}
+                  </option>
+                ))}
+              </select>
+              <div className="profile-buttons">
+                {!selectedProfileId ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={handleCreateNew}
+                  >
+                    + 新建
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleSetActive}
+                      disabled={activeMap[formData.category] === selectedProfileId}
+                    >
+                      设为默认
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={handleDelete}
+                    >
+                      删除
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* API配置表单 */}
+        <div className="form-section">
+          <div className="form-group">
+            <label htmlFor="name">名称</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="例如：GPT-4 生产环境"
+              className="form-control"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="apiUrl">API 地址</label>
+            <input
+              type="text"
+              id="apiUrl"
+              name="apiUrl"
+              value={formData.apiUrl}
+              onChange={handleChange}
+              placeholder="https://api.openai.com/v1"
+              className="form-control"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="apiKey">密钥</label>
+            <input
+              type="password"
+              id="apiKey"
+              name="apiKey"
+              value={isApiKeyMasked ? '' : formData.apiKey}
+              onChange={handleChange}
+              placeholder={isApiKeyMasked ? '已保存（留空保持不变）' : 'sk-...'}
+              className="form-control"
+            />
+            {isApiKeyMasked && (
+              <span className="form-hint">当前密钥已加密存储</span>
+            )}
+          </div>
+
+          <div className="form-row">
+            <div className="form-group flex-1">
+              <label htmlFor="model">模型</label>
+              <input
+                type="text"
+                id="model"
+                name="model"
+                value={formData.model}
+                onChange={handleChange}
+                placeholder="gpt-3.5-turbo"
+                className="form-control"
+              />
+            </div>
+            <div className="form-group flex-auto">
+              <label>&nbsp;</label>
+              <button
+                type="button"
+                className="btn btn-secondary btn-full"
+                onClick={handleConnect}
+                disabled={loading}
+              >
+                {loading ? '连接中...' : '获取模型列表'}
+              </button>
+            </div>
+          </div>
+
+          {availableModels.length > 0 && (
+            <div className="form-group">
+              <label htmlFor="modelSelect">选择模型</label>
+              <select
+                id="modelSelect"
+                value={formData.model}
+                onChange={(e) => handleModelSelect(e.target.value)}
+                className="form-control"
+              >
+                <option value="">从列表中选择...</option>
+                {availableModels.map((model, index) => (
+                  <option key={index} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* 底部操作栏 */}
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-text"
+            onClick={handleReset}
+            disabled={loading}
+          >
+            重置
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? '保存中...' : '保存配置'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ApiConfig;

@@ -1,0 +1,738 @@
+/* ApiConfig - Compact Modern Design */
+.api-config-container {
+  padding: var(--spacing-md);
+  color: var(--color-text-primary);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.api-config-title {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.api-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* 配置区域标签样式 - Compact Pill style */
+.config-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.config-tab {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.config-tab:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-elevated);
+}
+
+.config-tab.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* 配置管理区域 - Integrated Layout */
+.profile-manager {
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.profile-header > label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.profile-controls {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.profile-select-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.form-group.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-group.flex-auto {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 6px var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-ultra-light);
+}
+
+.form-control::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.form-text {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.btn {
+  padding: 6px var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 4px var(--spacing-sm);
+  font-size: 0.8rem;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Primary Button - Save/Create */
+.btn-primary {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary Button - Connect/Reset */
+.btn-secondary {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Danger Button - Delete */
+.btn-danger {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+/* Text Button - Minimal */
+.btn-text {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  padding: 6px var(--spacing-sm);
+}
+
+.btn-text:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-xl);
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000;
+}
+
+.notification-success {
+  background-color: var(--color-success);
+}
+
+.notification-info {
+  background-color: var(--color-info);
+}
+
+.notification-error {
+  background-color: var(--color-error);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Modified indicator on tabs */
+.modified-indicator {
+  color: var(--color-error);
+  font-size: 0.6rem;
+  margin-left: 4px;
+}
+
+/* Modal styles - Modern & Elegant */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  margin: 0;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(to right, var(--color-accent-ultra-light), transparent);
+}
+
+.modal-body {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.checkbox-label:hover {
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-border);
+  transform: translateX(2px);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+  border-radius: 4px;
+}
+
+.checkbox-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.modified-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, var(--color-accent-ultra-light), var(--color-accent));
+  color: white;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Modal Hint Text - Enhanced */
+.modal-hint {
+  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-tertiary);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-xs);
+}
+.workflow-manager {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.workflow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.workflow-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.workflow-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.workflow-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.workflow-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.workflow-item:hover {
+  border-color: var(--color-accent);
+  background-color: var(--color-bg-elevated);
+}
+
+.workflow-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.default-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+}
+
+.workflow-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.separator {
+  opacity: 0.5;
+}
+
+.delete-btn {
+  padding: 4px 8px;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.delete-btn:hover {
+  opacity: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
+}
+
+.empty-state p {
+  margin: var(--spacing-xs) 0;
+}
+
+.empty-state .hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.workflow-hint {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.workflow-hint p {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-weight: 600;
+}
+
+.workflow-hint ul {
+  margin: 0;
+  padding-left: var(--spacing-md);
+}
+
+.workflow-hint li {
+  margin: var(--spacing-xs) 0;
+  line-height: 1.5;
+}
+
+/* ==================== Compact Modern Design ==================== */
+
+/* Mode Toggle - Pill Style (Linear/Vercel) */
+.mode-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 6px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.mode-btn {
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.mode-btn:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn.active {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Compact Workflow Manager */
+.workflow-manager-compact {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  background-color: var(--color-bg-tertiary);
+  border-radius: 6px;
+}
+
+.workflow-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+}
+
+.workflow-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.workflow-actions-compact {
+  display: flex;
+  gap: 2px;
+}
+
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+.btn-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-icon-danger {
+  composes: btn-icon;
+  color: var(--color-error);
+}
+
+.btn-icon-danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.workflow-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.workflow-item-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: var(--color-bg-secondary);
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.workflow-item-compact:hover {
+  background-color: var(--color-bg-elevated);
+}
+
+.workflow-name-compact {
+  font-size: 0.8rem;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-default {
+  font-size: 0.65rem;
+  padding: 1px 4px;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.empty-hint {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Modal Hint Text */
+.modal-hint {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}

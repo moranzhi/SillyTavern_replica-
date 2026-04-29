@@ -1,0 +1,259 @@
+/* ==================== TopBar - Reference Design ==================== */
+
+.top-bar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  z-index: 100; /* 降低层级,不遮挡悬浮提示 */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.top-bar-content {
+  width: 100%;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+/* Status Section - Left side */
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Actions Section - Right side */
+.actions-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+/* Status Badge Styles - Minimalist */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 32px;
+}
+
+.status-badge:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.status-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* World Info badge - allow more space */
+.world-info-badge {
+  max-width: 400px;
+}
+
+.world-info-badge .status-label {
+  max-width: 330px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Action Button Styles - Badge-like (Similar to status-badge) */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  font-size: 1.4rem;  /* 更大的图标 */
+  line-height: 1;
+  min-height: 36px;   /* 与 status-badge 一致 */
+}
+
+.action-btn:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.action-btn:active {
+  background-color: var(--color-accent-ultra-light);
+  color: var(--color-accent);
+}
+
+.action-btn svg {
+  display: none; /* Hide SVG, use text instead */
+}
+
+/* ==================== 弹出面板通用样式 ==================== */
+
+.close-panel-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-left: auto;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.close-panel-button:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+.panel-overlay {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal-backdrop);
+  display: flex;
+  justify-content: center;
+  padding-top: var(--spacing-xl);
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel-content {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+  width: 90%;
+  max-width: 1200px;
+  max-height: calc(100vh - 80px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideDown var(--transition-smooth);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.panel-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gradient-subtle);
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.panel-body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+  background-color: var(--color-bg-primary);
+}
+
+/* TopBar 全局世界书列表 */
+.global-books-list-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.global-book-item-topbar {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 16px;
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.global-book-item-topbar:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+}
+
+.global-book-name-topbar {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-global-books-topbar {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  padding: 20px;
+}
+
+/* 主内容区域 */
+.main-container {
+  margin-top: 50px;
+  height: calc(100vh - 50px);
+  display: flex;
+  overflow: hidden;
+}
